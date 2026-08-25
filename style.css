@@ -62,3 +62,9 @@ li { margin: 6px 0; }
 .home-links li { margin: 14px 0; font-size: 19px; }
 
 footer { color: var(--muted); font-size: 14px; margin-top: 48px; }
+
+.lang {
+  font-size: 15px;
+  margin: 0 0 24px;
+  color: var(--muted);
+}
