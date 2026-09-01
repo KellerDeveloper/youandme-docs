@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Премиум — You&amp;Me</title>
+<meta name="description" content="Премиум You&amp;Me: фото друг друга на домашнем экране. Оформляет один — работает у обоих, без автосписаний.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0..1,0&display=swap" rel="stylesheet">
+<style>
+/* Страница живёт своей палитрой и не подключает style.css: макет премиума нарисован
+   в тёмной теме, остальной сайт — в светлой бежевой. Смешивать нельзя. */
+
+:root {
+  --bg:        #0e0f13;
+  --card:      #17191f;
+  --card-2:    #1c1f26;
+  --line:      #2c3039;
+  --line-soft: #22252d;
+  --fg:        #f2f0ec;
+  --muted:     #8b8f9a;
+  --dim:       #5f6470;
+  --mid:       #b6bbc6;
+  --accent:    oklch(0.68 0.14 250);
+  --brand:     oklch(0.68 0.14 25);
+  --on-light:  #060e1e;
+  --sans: 'Onest', 'Manrope', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 16px/1.55 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 60px; }
+
+.icon {
+  font-family: 'Material Symbols Rounded';
+  font-size: 20px;
+  line-height: 1;
+  display: block;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'opsz' 24;
+  -webkit-font-feature-settings: 'liga';
+}
+
+.eyebrow {
+  font: 500 11.5px/1 var(--mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+/* ── шапка ─────────────────────────────────────────────── */
+
+.top { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; }
+.brand { display: flex; gap: 11px; align-items: center; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px; background: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-mark .icon { font-size: 18px; color: #1a0908; font-variation-settings: 'FILL' 1, 'wght' 300, 'opsz' 24; }
+.brand-name { font: 700 17px/1 var(--sans); }
+.nav { display: flex; gap: 26px; align-items: center; }
+.nav a { font: 500 13.5px/1 var(--sans); color: var(--muted); text-decoration: none; }
+.nav a:hover { color: var(--fg); }
+.nav a.ghost { color: var(--fg); padding: 8px 14px; border-radius: 9px; border: 1px solid var(--line); }
+.nav a.ghost:hover { border-color: var(--mid); }
+
+/* ── герой ─────────────────────────────────────────────── */
+
+.hero { display: flex; gap: 44px; align-items: center; padding: 56px 0 46px; }
+.hero-text { flex: 1; min-width: 0; }
+.hero h1 {
+  margin: 16px 0 0;
+  font: 800 46px/1.05 var(--sans);
+  letter-spacing: -.03em;
+  text-wrap: pretty;
+}
+.hero p { margin: 16px 0 0; max-width: 440px; font-size: 16px; color: var(--muted); text-wrap: pretty; }
+.tags { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+.tag {
+  font: 500 12px/1 var(--mono);
+  color: var(--mid);
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.shot {
+  flex: none; width: 220px; height: 300px;
+  border-radius: 24px; border: 1px solid var(--line); background: var(--card);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; text-align: center; padding: 20px;
+  font: 400 11.5px/1.5 var(--mono); color: var(--dim);
+}
+
+/* ── что даёт ──────────────────────────────────────────── */
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 56px; }
+.feature { background: var(--card); border-radius: 20px; padding: 22px 20px; }
+.feature .icon { color: var(--accent); margin-bottom: 14px; }
+.feature h3 { margin: 0; font: 700 16px/1.2 var(--sans); }
+.feature p { margin: 9px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
+
+/* ── шаги ──────────────────────────────────────────────── */
+
+.step { padding: 40px 0; border-top: 1px solid var(--line-soft); }
+.step-no { font: 500 11.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.step h2 { margin: 14px 0 0; font: 700 26px/1.1 var(--sans); letter-spacing: -.02em; }
+.step > p { margin: 12px 0 0; font-size: 14px; color: var(--muted); max-width: 560px; text-wrap: pretty; }
+
+/* код привязки — шесть отдельных клеток, как в приложении */
+
+.code-box { margin-top: 22px; background: var(--card); border-radius: 20px; padding: 18px; max-width: 420px; }
+.cells { display: flex; gap: 9px; }
+.cells input {
+  flex: 1; width: 100%; min-width: 0; height: 46px;
+  border: 1px solid transparent; border-radius: 12px;
+  background: var(--bg); color: var(--fg);
+  font: 600 22px/1 var(--mono); text-align: center; text-transform: uppercase;
+  padding: 0;
+}
+.cells input:focus { outline: none; border-color: var(--accent); }
+.code-hint { margin-top: 13px; font: 400 12px/1.5 var(--mono); color: var(--muted); text-wrap: pretty; }
+
+.code-status {
+  margin-top: 13px; padding: 11px 14px; border-radius: 12px; background: var(--bg);
+  display: none; gap: 10px; align-items: center;
+  font: 500 13px/1.3 var(--sans);
+}
+.code-status.shown { display: flex; }
+.code-status .icon { font-size: 18px; }
+.code-status.ok { color: var(--fg); }
+.code-status.ok .icon { color: var(--accent); }
+.code-status.warn { color: var(--mid); }
+.code-status.warn .icon { color: var(--dim); }
+.code-status small { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--muted); margin-top: 3px; }
+
+/* ── тарифы ────────────────────────────────────────────── */
+
+.plans { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: stretch; }
+
+.plan {
+  position: relative; text-align: left; cursor: pointer;
+  background: var(--card); border: 2px solid transparent; border-radius: 18px;
+  padding: 20px 18px; color: inherit; font: inherit;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.plan:hover { border-color: var(--line); }
+.plan[aria-pressed="true"] { border-color: var(--accent); }
+.plan-term { font: 500 13.5px/1 var(--sans); color: var(--muted); }
+.plan-price { font: 700 30px/1 var(--sans); letter-spacing: -.02em; }
+.plan-meta { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.plan-per { font: 400 12px/1 var(--mono); color: var(--dim); }
+.plan-note { margin-top: auto; font: 400 12px/1.45 var(--mono); color: var(--muted); }
+
+/* годовой — единственный светлый, он же выбран по умолчанию */
+.plan.best { background: var(--fg); color: var(--on-light); }
+.plan.best .plan-term { color: rgba(6,14,30,.7); }
+.plan.best .plan-price { color: var(--on-light); font-size: 34px; }
+.plan.best .plan-per { color: rgba(6,14,30,.7); }
+.plan.best .plan-note { color: var(--on-light); font-weight: 600; }
+.plan.best:hover { border-color: var(--mid); }
+.plan.best[aria-pressed="true"] { border-color: var(--accent); }
+.plan-badge {
+  position: absolute; top: -10px; right: 14px;
+  padding: 5px 10px; border-radius: 7px;
+  background: var(--on-light); color: var(--fg);
+  font: 600 10.5px/1 var(--mono);
+}
+
+.pay { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn {
+  font: 700 15px/1 var(--sans); border-radius: 14px; padding: 16px 30px;
+  border: 1px solid transparent; cursor: pointer;
+}
+.btn-primary { background: var(--fg); color: var(--on-light); }
+.btn-primary:hover { background: #fff; }
+.btn-secondary { background: transparent; color: var(--fg); border-color: var(--line); font-weight: 500; padding: 16px 26px; }
+.btn-secondary:hover { border-color: var(--mid); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.legal { margin-top: 16px; font: 400 12px/1.55 var(--mono); color: var(--dim); text-wrap: pretty; }
+.legal a { color: var(--mid); }
+
+.pay-error {
+  margin-top: 14px; display: none;
+  padding: 13px 15px; border-radius: 14px; background: rgba(111,157,240,.1);
+  font: 400 12px/1.5 var(--mono); color: var(--mid); text-wrap: pretty;
+}
+.pay-error.shown { display: block; }
+
+/* ── вопросы ───────────────────────────────────────────── */
+
+.faq { padding: 40px 0; border-top: 1px solid var(--line-soft); }
+.faq h2 { margin: 0 0 22px; font: 700 26px/1.1 var(--sans); letter-spacing: -.02em; }
+.qa { padding: 18px 0; border-bottom: 1px solid var(--line-soft); }
+.qa:last-child { border-bottom: 0; }
+.qa h3 { margin: 0; font: 600 14.5px/1.3 var(--sans); }
+.qa p { margin: 9px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
+
+/* ── подвал ────────────────────────────────────────────── */
+
+.foot { padding: 30px 0 50px; border-top: 1px solid var(--line-soft); display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.foot-req { font: 400 12px/1.7 var(--mono); color: var(--dim); }
+.foot-req a { color: var(--dim); }
+.foot-links { display: flex; gap: 18px; flex-wrap: wrap; font: 400 12px/1.7 var(--mono); }
+.foot-links a { color: var(--muted); text-decoration: none; }
+.foot-links a:hover { color: var(--fg); }
+
+/* ── телефон ───────────────────────────────────────────── */
+
+@media (max-width: 760px) {
+  .wrap { padding: 0 20px; }
+  .top { padding: 18px 0; }
+  .nav { gap: 14px; }
+  .nav a:not(.ghost) { display: none; }
+  /* align-items здесь обязан остаться stretch: при flex-start колонка сжимается
+     до ширины содержимого, а в ней лежит абзац с max-width 440px — и страница
+     становится шире экрана. */
+  .hero { flex-direction: column; align-items: stretch; gap: 28px; padding: 34px 0; }
+  .hero h1 { font-size: 32px; }
+  .hero p { font-size: 15px; max-width: none; }
+  .shot { width: 100%; height: 200px; }
+  .features { grid-template-columns: 1fr; padding-bottom: 34px; }
+  /* На телефоне тариф — одна строка: срок и цена. Хвосты вроде «попробовать»
+     макет здесь не показывает, и в 414 px они всё равно не помещаются. */
+  .plans { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .plan {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "term price" "meta price";
+    align-items: center; gap: 4px 14px; padding: 15px 18px;
+  }
+  .plan-term { grid-area: term; }
+  .plan-price, .plan.best .plan-price { grid-area: price; font-size: 22px; }
+  .plan-meta { grid-area: meta; flex-direction: row; gap: 8px; min-width: 0; }
+  .plan-note { display: none; margin: 0; }
+  .plan.best .plan-note { display: block; }
+  .plan-badge { top: -8px; right: 12px; }
+  .pay .btn { flex: 1; padding: 16px 20px; text-align: center; }
+  .foot { flex-direction: column; gap: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark"><span class="icon">favorite</span></div>
+    <span class="brand-name">You&amp;Me</span>
+  </div>
+  <nav class="nav">
+    <a href="#daet">Что даёт</a>
+    <a href="#ceny">Цены</a>
+    <a href="#voprosy">Вопросы</a>
+    <a href="#kod" class="ghost">Оформить</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <div class="eyebrow">Премиум You&amp;Me</div>
+    <h1>Фото друг друга — на домашнем экране</h1>
+    <p>Оформляет один — работает у обоих. Без автосписаний: пакет просто заканчивается.
+      Всё, чем вы пользуетесь в приложении сейчас, было и останется бесплатным.</p>
+    <div class="tags">
+      <span class="tag">без подписки и списаний</span>
+      <span class="tag">СБП и карты</span>
+      <span class="tag">чек в «Мой налог»</span>
+    </div>
+  </div>
+  <!-- TODO: заменить на реальный скриншот домашнего экрана с фото-виджетом -->
+  <div class="shot">
+    <div>скриншот</div>
+    <div>домашнего экрана</div>
+    <div>с фото-виджетом</div>
+  </div>
+</section>
+
+<section class="features" id="daet">
+  <div class="feature">
+    <span class="icon">photo_camera</span>
+    <h3>Виджет с фото</h3>
+    <p>Партнёр выбирает кадр — он появляется у вас на экране в течение часа.</p>
+  </div>
+  <div class="feature">
+    <span class="icon">group</span>
+    <h3>Одна оплата на двоих</h3>
+    <p>Премиум привязан к паре, а не к человеку. Можно оформить как подарок.</p>
+  </div>
+  <div class="feature">
+    <span class="icon">rocket_launch</span>
+    <h3>Всё новое впереди</h3>
+    <p>Премиум оплачивает разработку: следующие функции выходят в нём же.</p>
+  </div>
+</section>
+
+<section class="step" id="kod">
+  <div class="step-no">Шаг 1</div>
+  <h2>Код привязки</h2>
+  <p>Откройте приложение → «Мы» → «Премиум». Шесть символов под заголовком — это он.</p>
+
+  <div class="code-box">
+    <div class="cells" id="cells">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 1">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 2">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 3">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 4">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 5">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 6">
+    </div>
+    <div class="code-hint">Код у пары один и не меняется. Оформить премиум может любой из двоих.</div>
+    <div class="code-status" id="codeStatus" role="status" aria-live="polite">
+      <span class="icon"></span>
+      <span class="code-status-text"></span>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="ceny">
+  <div class="step-no">Шаг 2</div>
+  <h2>Сколько берём премиум</h2>
+  <p>Деньги вперёд, автопродления нет. Пакет закончится — ничего не спишется.</p>
+
+  <div class="plans" id="plans">
+    <button type="button" class="plan" data-plan="m1" data-price="129" aria-pressed="false">
+      <span class="plan-term">1 месяц</span>
+      <span class="plan-price">129 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">129 ₽ в месяц</span>
+        <span class="plan-note">попробовать</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="m3" data-price="299" aria-pressed="false">
+      <span class="plan-term">3 месяца</span>
+      <span class="plan-price">299 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">100 ₽ в месяц</span>
+        <span class="plan-note">−23 %</span>
+      </span>
+    </button>
+    <button type="button" class="plan best" data-plan="m12" data-price="899" aria-pressed="true">
+      <span class="plan-badge">Выгодный</span>
+      <span class="plan-term">12 месяцев</span>
+      <span class="plan-price">899 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">75 ₽ в месяц</span>
+        <span class="plan-note">−42 % к месячному</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="forever" data-price="1990" aria-pressed="false">
+      <span class="plan-term">Навсегда</span>
+      <span class="plan-price">1 990 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">один раз</span>
+        <span class="plan-note">≈ два года годового</span>
+      </span>
+    </button>
+  </div>
+
+  <div class="pay">
+    <button type="button" class="btn btn-primary" id="paySbp">Оплатить 899 ₽ через СБП</button>
+    <button type="button" class="btn btn-secondary" id="payCard">Картой</button>
+  </div>
+
+  <div class="legal">
+    Нажимая «Оплатить», вы принимаете <a href="offer.html">оферту</a>
+    и <a href="privacy-ru.html">политику конфиденциальности</a>. Чек придёт на почту из ЮKassa.
+  </div>
+
+  <div class="pay-error" id="payError" role="status" aria-live="polite"></div>
+</section>
+
+<section class="faq" id="voprosy">
+  <h2>Вопросы, которые задают</h2>
+
+  <div class="qa">
+    <h3>Что будет с тем, чем я уже пользуюсь?</h3>
+    <p>Ничего. Хотелки, документы, карты, планы, календарь, задачи и капсулы остаются
+      бесплатными навсегда. Премиум — только про новое.</p>
+  </div>
+  <div class="qa">
+    <h3>Деньги будут списываться сами?</h3>
+    <p>Нет. Автопродления не существует: карта не привязывается, пакет заканчивается и всё.
+      Захотите — оформите снова.</p>
+  </div>
+  <div class="qa">
+    <h3>Партнёру платить отдельно?</h3>
+    <p>Нет. Премиум действует на пару: у второго он откроется сам, перезапускать приложение
+      не нужно.</p>
+  </div>
+  <div class="qa">
+    <h3>Премиум не открылся</h3>
+    <p>Обычно это минута. Если прошло больше — напишите на почту и приложите номер платежа
+      из чека, разберёмся руками.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot-req">
+    Самозанятый Келлер Д. А.<br>
+    ИНН 661401740383<br>
+    <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a>
+  </div>
+  <div class="foot-links">
+    <a href="offer.html">Оферта</a>
+    <a href="privacy-ru.html">Политика конфиденциальности</a>
+    <a href="consent-ru.html">Согласие на обработку ПД</a>
+    <a href="support.html">Поддержка</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+// Адрес Cloud Function createPayment. Пусто — оплата ещё не подключена, и страница
+// говорит об этом честно, вместо того чтобы вести человека в никуда.
+const PAY_ENDPOINT = "";
+
+const cells = [...document.querySelectorAll("#cells input")];
+const statusBox = document.getElementById("codeStatus");
+const plansBox = document.getElementById("plans");
+const sbpBtn = document.getElementById("paySbp");
+const cardBtn = document.getElementById("payCard");
+const payError = document.getElementById("payError");
+
+let selected = plansBox.querySelector('[aria-pressed="true"]');
+
+const code = () => cells.map(c => c.value).join("");
+
+function status(kind, text, sub) {
+  statusBox.className = "code-status shown " + kind;
+  statusBox.querySelector(".icon").textContent = kind === "ok" ? "check_circle" : "info";
+  statusBox.querySelector(".code-status-text").innerHTML =
+    text + (sub ? '<small>' + sub + '</small>' : "");
+}
+
+// Ввод: одна клетка — один символ, автопереход вперёд и назад по Backspace.
+cells.forEach((cell, i) => {
+  cell.addEventListener("input", () => {
+    cell.value = cell.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    if (cell.value && i < cells.length - 1) cells[i + 1].focus();
+    if (code().length === 6) checkCode();
+    else statusBox.className = "code-status";
+  });
+  cell.addEventListener("keydown", e => {
+    if (e.key === "Backspace" && !cell.value && i > 0) cells[i - 1].focus();
+    if (e.key === "ArrowLeft" && i > 0) cells[i - 1].focus();
+    if (e.key === "ArrowRight" && i < cells.length - 1) cells[i + 1].focus();
+  });
+  // Вставка кода целиком раскладывается по клеткам, а не падает в одну.
+  cell.addEventListener("paste", e => {
+    e.preventDefault();
+    const text = (e.clipboardData.getData("text") || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    [...text].slice(0, cells.length - i).forEach((ch, k) => cells[i + k].value = ch);
+    cells[Math.min(i + text.length, cells.length - 1)].focus();
+    if (code().length === 6) checkCode();
+  });
+});
+
+async function checkCode() {
+  if (!PAY_ENDPOINT) {
+    status("warn", "Приём оплаты подключается",
+      "Код запомнится — вернитесь на страницу через пару дней.");
+    return;
+  }
+  status("warn", "Проверяем код…");
+  try {
+    const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(code()));
+    const data = await r.json();
+    if (data.ok) status("ok", data.names || "Пара найдена", "пара найдена");
+    else status("warn", "Такого кода нет", "Проверьте, что переписали его из приложения без ошибок.");
+  } catch {
+    status("warn", "Не получилось проверить код", "Проверьте связь и попробуйте ещё раз.");
+  }
+}
+
+// Выбор пакета: сумма едет в подпись главной кнопки.
+plansBox.addEventListener("click", e => {
+  const plan = e.target.closest(".plan");
+  if (!plan) return;
+  selected.setAttribute("aria-pressed", "false");
+  plan.setAttribute("aria-pressed", "true");
+  selected = plan;
+  sbpBtn.textContent = "Оплатить " + Number(plan.dataset.price).toLocaleString("ru-RU") + " ₽ через СБП";
+});
+
+async function pay(method) {
+  payError.classList.remove("shown");
+  if (code().length !== 6) {
+    payError.textContent = "Сначала введите код привязки из приложения — иначе премиум некуда зачислить.";
+    payError.classList.add("shown");
+    cells[0].focus();
+    return;
+  }
+  if (!PAY_ENDPOINT) {
+    payError.textContent = "Приём оплаты ещё подключается. Загляните через пару дней — код привязки за это время не изменится.";
+    payError.classList.add("shown");
+    return;
+  }
+  sbpBtn.disabled = cardBtn.disabled = true;
+  try {
+    const r = await fetch(PAY_ENDPOINT + "/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: code(), plan: selected.dataset.plan, method })
+    });
+    const data = await r.json();
+    if (data.confirmationUrl) location.href = data.confirmationUrl;
+    else throw new Error(data.error || "no url");
+  } catch {
+    payError.textContent = "Не получилось начать оплату. Попробуйте ещё раз, а если повторится — напишите на почту из подвала.";
+    payError.classList.add("shown");
+    sbpBtn.disabled = cardBtn.disabled = false;
+  }
+}
+
+sbpBtn.addEventListener("click", () => pay("sbp"));
+cardBtn.addEventListener("click", () => pay("card"));
+</script>
+
+</body>
+</html>
