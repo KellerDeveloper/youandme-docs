@@ -13,36 +13,19 @@
 <style>
 /* Стили только этой страницы. Палитра, шапка, подвал и типографика — в style.css */
 
-/* ── герой ─────────────────────────────────────────────── */
+/* ── заголовок ─────────────────────────────────────────── */
 
-.hero { display: flex; gap: 44px; align-items: center; padding: 56px 0 46px; }
-.hero-text { flex: 1; min-width: 0; }
-.hero h1 {
-  margin: 16px 0 0;
-  font: 800 46px/1.05 var(--sans);
-  letter-spacing: -.03em;
-  text-wrap: pretty;
-}
-.hero p { margin: 16px 0 0; max-width: 440px; font-size: 16px; color: var(--muted); text-wrap: pretty; }
-.tags { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
-.tag {
-  font: 500 12px/1 var(--mono);
-  color: var(--mid);
-  padding: 9px 13px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-.shot {
-  flex: none; width: 220px; height: 300px;
-  border-radius: 24px; border: 1px solid var(--line); background: var(--card);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; text-align: center; padding: 20px;
-  font: 400 11.5px/1.5 var(--mono); color: var(--dim);
-}
+/* Герой с крупным заголовком и скриншотом убран из макета: на десктопе страница
+   начинается сразу с трёх плашек, а шапка и так объясняет, где человек. На телефоне
+   плашки уезжают под сгиб, и без заголовка непонятно, куда попал, — поэтому там он
+   остаётся. */
+.lead { display: none; }
+.lead h1 { margin: 0; font: 800 25px/1.1 var(--sans); letter-spacing: -.03em; }
+.lead p { margin: 10px 0 0; font-size: 13px; color: var(--muted); text-wrap: pretty; }
 
 /* ── что даёт ──────────────────────────────────────────── */
 
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding-bottom: 56px; }
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 48px 0 52px; }
 .feature { background: var(--card); border-radius: 20px; padding: 22px 20px; }
 .feature .icon { color: var(--accent); margin-bottom: 14px; }
 .feature h3 { margin: 0; font: 700 16px/1.2 var(--sans); }
@@ -61,12 +44,12 @@
 .cells { display: flex; gap: 9px; }
 .cells input {
   flex: 1; width: 100%; min-width: 0; height: 46px;
-  border: 1px solid transparent; border-radius: 12px;
+  border: 1px solid var(--line); border-radius: 12px;
   background: var(--bg); color: var(--fg);
   font: 600 22px/1 var(--mono); text-align: center; text-transform: uppercase;
   padding: 0;
 }
-.cells input:focus { outline: none; border-color: var(--accent); }
+.cells input:focus { outline: none; border-color: var(--accent); border-width: 2px; }
 .code-hint { margin-top: 13px; font: 400 12px/1.5 var(--mono); color: var(--muted); text-wrap: pretty; }
 
 .code-status {
@@ -77,7 +60,7 @@
 .code-status.shown { display: flex; }
 .code-status .icon { font-size: 18px; }
 .code-status.ok { color: var(--fg); }
-.code-status.ok .icon { color: var(--accent); }
+.code-status.ok .icon { color: var(--accent); font-variation-settings: 'FILL' 1, 'wght' 300, 'opsz' 24; }
 .code-status.warn { color: var(--mid); }
 .code-status.warn .icon { color: var(--dim); }
 .code-status small { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--muted); margin-top: 3px; }
@@ -149,11 +132,8 @@
   /* align-items здесь обязан остаться stretch: при flex-start колонка сжимается
      до ширины содержимого, а в ней лежит абзац с max-width 440px — и страница
      становится шире экрана. */
-  .hero { flex-direction: column; align-items: stretch; gap: 28px; padding: 34px 0; }
-  .hero h1 { font-size: 32px; }
-  .hero p { font-size: 15px; max-width: none; }
-  .shot { width: 100%; height: 200px; }
-  .features { grid-template-columns: 1fr; padding-bottom: 34px; }
+  .lead { display: block; padding: 12px 0 0; }
+  .features { grid-template-columns: 1fr; padding: 22px 0 34px; }
   /* На телефоне тариф — одна строка: срок и цена. Хвосты вроде «попробовать»
      макет здесь не показывает, и в 414 px они всё равно не помещаются. */
   .plans { grid-template-columns: minmax(0, 1fr); gap: 10px; }
@@ -180,7 +160,7 @@
 
 <header class="top">
   <a class="brand" href="/">
-    <div class="brand-mark"><span class="icon">favorite</span></div>
+    <span class="brand-dots"><i></i><i></i></span>
     <span class="brand-name">You&amp;Me</span>
   </a>
   <nav class="nav-top">
@@ -191,25 +171,11 @@
   </nav>
 </header>
 
-<section class="hero">
-  <div class="hero-text">
-    <div class="eyebrow">Премиум You&amp;Me</div>
-    <h1>Фото друг друга — на домашнем экране</h1>
-    <p>Оформляет один — работает у обоих. Без автосписаний: пакет просто заканчивается.
-      Всё, чем вы пользуетесь в приложении сейчас, было и останется бесплатным.</p>
-    <div class="tags">
-      <span class="tag">без подписки и списаний</span>
-      <span class="tag">СБП и карты</span>
-      <span class="tag">чек в «Мой налог»</span>
-    </div>
-  </div>
-  <!-- TODO: заменить на реальный скриншот домашнего экрана с фото-виджетом -->
-  <div class="shot">
-    <div>скриншот</div>
-    <div>домашнего экрана</div>
-    <div>с фото-виджетом</div>
-  </div>
+<section class="lead">
+  <h1>Премиум</h1>
+  <p>Виджет с фото · одна оплата на двоих · всё новое впереди</p>
 </section>
+
 
 <section class="features" id="daet">
   <div class="feature">
@@ -341,16 +307,16 @@
     <a href="privacy-ru.html">Политика конфиденциальности</a>
     <a href="consent-ru.html">Согласие на обработку ПД</a>
     <a href="support.html">Поддержка</a>
-    <a href="delete-account.html">Удаление аккаунта</a>
   </div>
 </footer>
 
 </div>
 
 <script>
-// Адрес Cloud Function createPayment. Пусто — оплата ещё не подключена, и страница
-// говорит об этом честно, вместо того чтобы вести человека в никуда.
-const PAY_ENDPOINT = "";
+// Адрес Cloud Function `pay`. Три ветки — /check, /create, /webhook — живут по этому
+// адресу с разными путями. Пусто — оплата не подключена, и страница говорит об этом
+// честно, вместо того чтобы вести человека в никуда.
+const PAY_ENDPOINT = "https://us-central1-youandme-f04ca.cloudfunctions.net/pay";
 
 const cells = [...document.querySelectorAll("#cells input")];
 const statusBox = document.getElementById("codeStatus");
@@ -452,6 +418,15 @@ async function pay(method) {
 
 sbpBtn.addEventListener("click", () => pay("sbp"));
 cardBtn.addEventListener("click", () => pay("card"));
+
+// Возврат с формы оплаты. Премиум сюда не заглядывает: его выдаёт уведомление от ЮKassa
+// на сервер, и приходит оно своим темпом — обычно за секунды, но обещать «уже готово»
+// нельзя. Поэтому говорим про минуту и отправляем в приложение, где статус настоящий.
+if (new URLSearchParams(location.search).get("paid")) {
+  status("ok", "Оплата принята",
+    "Премиум откроется в приложении в течение минуты — перезапускать его не нужно.");
+  statusBox.scrollIntoView({ behavior: "smooth", block: "center" });
+}
 </script>
 
 </body>
