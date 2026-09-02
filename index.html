@@ -25,7 +25,7 @@
 
 /* ── что даёт ──────────────────────────────────────────── */
 
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 48px 0 52px; }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; padding: 48px 0 52px; }
 .feature { background: var(--card); border-radius: 20px; padding: 22px 20px; }
 .feature .icon { color: var(--accent); margin-bottom: 14px; }
 .feature h3 { margin: 0; font: 700 16px/1.2 var(--sans); }
@@ -173,11 +173,16 @@
 
 <section class="lead">
   <h1>Премиум</h1>
-  <p>Виджет с фото · одна оплата на двоих · всё новое впереди</p>
+  <p>Вопрос дня · виджет с фото · одна оплата на двоих</p>
 </section>
 
 
 <section class="features" id="daet">
+  <div class="feature">
+    <span class="icon">forum</span>
+    <h3>Вопрос дня</h3>
+    <p>Каждый день новый вопрос друг о друге. Каждый отвечает у себя, ответы открываются, когда ответили оба. Без премиума — раз в неделю.</p>
+  </div>
   <div class="feature">
     <span class="icon">photo_camera</span>
     <h3>Виджет с фото</h3>
