@@ -119,6 +119,24 @@
 }
 .pay-error.shown { display: block; }
 
+/* ── поддержать ────────────────────────────────────────── */
+
+/* Секция намеренно скромнее тарифов: донат — не сценарий страницы, а возможность для
+   тех, кто дочитал. Поэтому суммы чипами, а не крупными карточками, как у пакетов. */
+.tips { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.tip {
+  appearance: none; background: var(--card); color: var(--fg); border: 1px solid transparent;
+  border-radius: 14px; padding: 13px 20px; font: 600 15px/1 var(--sans); cursor: pointer;
+}
+.tip:hover { border-color: var(--line); }
+.tip[aria-pressed="true"] { border-color: var(--accent); }
+.tip-own {
+  width: 132px; background: var(--card); color: var(--fg); border: 1px solid transparent;
+  border-radius: 14px; padding: 13px 16px; font: 600 15px/1 var(--sans);
+}
+.tip-own::placeholder { color: var(--dim); font-weight: 400; }
+.tip-own:focus { outline: none; border-color: var(--accent); }
+
 /* ── вопросы ───────────────────────────────────────────── */
 
 .faq { padding: 40px 0; border-top: 1px solid var(--line-soft); }
@@ -276,6 +294,32 @@
   <div class="pay-error" id="payError" role="status" aria-live="polite"></div>
 </section>
 
+<section class="step" id="podderzhat">
+  <h2>Поддержать</h2>
+  <p>Если приложение оказалось полезным и хочется сказать спасибо деньгами — вот кнопка.
+    Это не покупка: премиум за донат не открывается, код привязки не нужен, и вернуть
+    его не получится. Просто поддержка, за неё спасибо.</p>
+
+  <div class="tips" id="tips">
+    <button type="button" class="tip" data-tip="100" aria-pressed="false">100 ₽</button>
+    <button type="button" class="tip" data-tip="300" aria-pressed="true">300 ₽</button>
+    <button type="button" class="tip" data-tip="500" aria-pressed="false">500 ₽</button>
+    <input class="tip-own" id="tipOwn" inputmode="decimal" autocomplete="off"
+           placeholder="своя сумма" aria-label="Своя сумма доната">
+  </div>
+
+  <div class="pay">
+    <button type="button" class="btn btn-primary" id="tipSbp">Поддержать на 300 ₽ через СБП</button>
+    <button type="button" class="btn btn-secondary" id="tipCard">Картой</button>
+  </div>
+
+  <div class="legal">
+    От 10 до 15 000 ₽. Чек придёт на почту из ЮKassa.
+  </div>
+
+  <div class="pay-error" id="tipError" role="status" aria-live="polite"></div>
+</section>
+
 <section class="faq" id="voprosy">
   <h2>Вопросы, которые задают</h2>
 
@@ -427,13 +471,94 @@ async function pay(method) {
 sbpBtn.addEventListener("click", () => pay("sbp"));
 cardBtn.addEventListener("click", () => pay("card"));
 
+// ── донат ────────────────────────────────────────────────────────────────────
+// Отдельная ручка и отдельные кнопки: у доната нет ни кода пары, ни пакета, и
+// путать его с оплатой премиума нельзя — ни в коде, ни на экране.
+const tipsBox = document.getElementById("tips");
+const tipOwn = document.getElementById("tipOwn");
+const tipSbp = document.getElementById("tipSbp");
+const tipCard = document.getElementById("tipCard");
+const tipError = document.getElementById("tipError");
+
+let tipChip = tipsBox.querySelector('[aria-pressed="true"]');
+
+// Своя сумма или выбранный чип — своя главнее, раз человек её вписал.
+const tipAmount = () => tipOwn.value.trim() || tipChip?.dataset.tip || "";
+
+function tipLabel() {
+  const rubles = Number(tipAmount().replace(",", "."));
+  tipSbp.textContent = Number.isFinite(rubles) && rubles > 0
+    ? "Поддержать на " + rubles.toLocaleString("ru-RU") + " ₽ через СБП"
+    : "Поддержать через СБП";
+}
+
+tipsBox.addEventListener("click", e => {
+  const chip = e.target.closest(".tip");
+  if (!chip) return;
+  tipChip?.setAttribute("aria-pressed", "false");
+  chip.setAttribute("aria-pressed", "true");
+  tipChip = chip;
+  // Выбор чипа отменяет вписанное вручную — иначе непонятно, что уйдёт в оплату.
+  tipOwn.value = "";
+  tipLabel();
+});
+
+tipOwn.addEventListener("input", () => {
+  tipOwn.value = tipOwn.value.replace(/[^0-9.,]/g, "");
+  // Пока в поле что-то есть, платим по нему — чип гаснет, чтобы не спорил с полем.
+  if (tipOwn.value) {
+    tipChip?.setAttribute("aria-pressed", "false");
+    tipChip = null;
+  }
+  tipLabel();
+});
+
+async function tip(method) {
+  tipError.classList.remove("shown");
+  const amount = tipAmount();
+  if (!amount) {
+    tipError.textContent = "Выберите сумму или впишите свою.";
+    tipError.classList.add("shown");
+    tipOwn.focus();
+    return;
+  }
+  tipSbp.disabled = tipCard.disabled = true;
+  try {
+    const r = await fetch(PAY_ENDPOINT + "/donate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount, method })
+    });
+    const data = await r.json();
+    if (data.confirmationUrl) location.href = data.confirmationUrl;
+    else throw new Error(data.error || "no url");
+  } catch {
+    // Сервер принимает от 10 до 15 000 ₽ — за границами он отвечает ошибкой, и почти
+    // всегда это именно сумма, а не сбой. Поэтому подсказываем про неё.
+    tipError.textContent = "Не получилось начать оплату. Проверьте сумму — она должна быть от 10 до 15 000 ₽.";
+    tipError.classList.add("shown");
+    tipSbp.disabled = tipCard.disabled = false;
+  }
+}
+
+tipSbp.addEventListener("click", () => tip("sbp"));
+tipCard.addEventListener("click", () => tip("card"));
+
 // Возврат с формы оплаты. Премиум сюда не заглядывает: его выдаёт уведомление от ЮKassa
 // на сервер, и приходит оно своим темпом — обычно за секунды, но обещать «уже готово»
 // нельзя. Поэтому говорим про минуту и отправляем в приложение, где статус настоящий.
-if (new URLSearchParams(location.search).get("paid")) {
+const back = new URLSearchParams(location.search);
+if (back.get("paid")) {
   status("ok", "Оплата принята",
     "Премиум откроется в приложении в течение минуты — перезапускать его не нужно.");
   statusBox.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Возврат с доната — свой, потому что премиума за него не будет и обещать его нельзя.
+if (back.get("thanks")) {
+  tipError.textContent = "Спасибо. Чек придёт на почту из ЮKassa.";
+  tipError.classList.add("shown");
+  tipError.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 </script>
 
