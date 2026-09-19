@@ -321,7 +321,10 @@
 // Адрес Cloud Function `pay`. Три ветки — /check, /create, /webhook — живут по этому
 // адресу с разными путями. Пусто — оплата не подключена, и страница говорит об этом
 // честно, вместо того чтобы вести человека в никуда.
-const PAY_ENDPOINT = "https://us-central1-youandme-f04ca.cloudfunctions.net/pay";
+// Оплату принимает наш сервер в Яндекс Облаке (с 19.09.2026). Раньше здесь стоял
+// адрес Cloud Function в Firebase — она жива и осталась путём отката, но
+// уведомления ЮKassa с того дня идут сюда же, на /pay/webhook.
+const PAY_ENDPOINT = "https://d5dnoul9e8l8nv79urvg.g4vq2kuy.apigw.yandexcloud.net/pay";
 
 const cells = [...document.querySelectorAll("#cells input")];
 const statusBox = document.getElementById("codeStatus");
