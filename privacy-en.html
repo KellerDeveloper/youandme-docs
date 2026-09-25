@@ -25,11 +25,11 @@
 <p class="lang">English · <a href="privacy-ru.html">Русский</a></p>
 
 <h1>Privacy Policy</h1>
-<p class="updated">You&amp;Me · Edition 1, August 25, 2026</p>
+<p class="updated">You&amp;Me · Edition 2, September 19, 2026</p>
 
-<p>You&amp;Me is a private space for two: shared plans, files, wishes and loyalty
-cards. This policy explains what the app stores, where that data lives, who can see it
-and how to delete it.</p>
+<p>You&amp;Me is a private space for two: shared plans and trips, documents at hand, wishes,
+notes, loyalty cards, a calendar of important dates. This policy explains what the app
+stores, where that data lives, who can see it and how to delete it.</p>
 
 <p>The app is built and maintained by <strong>Dmitry Alekseevich Keller</strong>
 (the "data controller", "we"). For any question about this policy or your data, write to
@@ -38,6 +38,7 @@ and how to delete it.</p>
 <div class="card">
 <strong>In short</strong>
 <ul>
+<li>Your data is stored <strong>in Russia</strong>, on Yandex Cloud.</li>
 <li>We do not sell your data and do not show ads.</li>
 <li>The app has no analytics, crash reporting or advertising SDKs.</li>
 <li>Your entries are seen only by you and the one partner you linked your space with.</li>
@@ -48,31 +49,47 @@ and how to delete it.</p>
 <h2>1. What data we collect</h2>
 
 <h3>Account data</h3>
-<p>You can only sign in with <strong>Sign in with Apple</strong> on iPhone or
-<strong>Sign in with Google</strong> on Android. From there we receive a user
-identifier and an email address — if you chose "Hide My Email", it will be Apple's private relay address.
-We store the account identifier issued by Firebase Authentication. There are no passwords: we
-never see or store any.</p>
+<p>There are three ways to sign in: <strong>Sign in with Apple</strong>, <strong>Sign in
+with Google</strong> and <strong>by email address</strong> — a one-time code is sent to your
+inbox. From Apple and Google we receive the permanent identifier of your account with them
+and an email address; if you chose "Hide My Email", it will be Apple's private relay
+address. The app has no passwords, and neither do we — not in plain text, not encrypted.</p>
+<p>Sign-in methods can be linked and unlinked in settings. The email address also lets us
+recognise you: sign in with Apple once and with Google another time using the same address,
+and you end up in the same account rather than in two separate ones.</p>
 
 <h3>Profile</h3>
-<p>Your name and date of birth, if you provided them. The date of birth is used only to
-show your birthday inside the shared space and to remind your partner about it in advance.</p>
+<p>Your name, date of birth and gender, if you provided them, and the app language. The date
+of birth is used only to show your birthday inside the shared space and to remind your
+partner about it in advance. Gender is used so the app addresses you and your partner with
+the right words.</p>
 
 <h3>Entries you create</h3>
 <p>Everything you put into the app is stored so it can sync between your devices
 and your partner's devices:</p>
 <ul>
 <li>wishes, including product links, prices and attached pictures;</li>
-<li>plans, trips, tasks and votes;</li>
-<li>shared calendar events and important dates;</li>
-<li>time capsules — letters sealed until a date you choose;</li>
+<li>tasks and shopping lists;</li>
+<li>notes and note folders;</li>
+<li>plans and trips, including their expenses;</li>
+<li>shared calendar events, important dates and birthdays of loved ones;</li>
+<li>documents and files you upload or scan, and the files themselves;</li>
 <li>loyalty cards, including card numbers and barcodes;</li>
-<li>files you upload or scan, and the files themselves.</li>
+<li>time capsules — letters sealed until a date you choose;</li>
+<li>polls and your votes;</li>
+<li>the question of the day and your answers to it;</li>
+<li>shared photos you add to the home screen.</li>
 </ul>
 <p>The app does not require you to upload identity documents, bank details or other
-sensitive information, and does not recommend doing so. What exactly goes
-into the shared space is up to you; access to uploaded files is restricted to the members
-of your space by server-side rules.</p>
+sensitive information, and does not recommend doing so. What exactly goes into the shared
+space is up to you; access to what you upload is restricted to the members of your space —
+the server verifies membership on every read and every write.</p>
+
+<h3>Other people's data that you enter</h3>
+<p>In the loved ones section and in the shared calendar you can record other people's names
+and dates of birth, and in notes and files you can mention anyone. Such data is processed as
+content of your space. Entering someone else's personal data is your decision and your
+responsibility: make sure that person does not mind.</p>
 
 <h3>Device permissions</h3>
 <ul>
@@ -84,6 +101,8 @@ shared events back. This happens on the device and only when you ask for it.</li
 iOS itself; the app only receives a "yes" or "no" and has no access to your biometrics.</li>
 <li><strong>Photos</strong> — the pictures you choose are handed to the app by the system
 picker. The app does not get access to your whole library.</li>
+<li><strong>Notifications</strong> — to tell you what your partner has done. How that works
+is covered in section 5.</li>
 </ul>
 
 <h3>Links you paste</h3>
@@ -92,75 +111,137 @@ background to read the title, price and picture. The request goes directly from 
 to the site you pasted and is governed by that site's rules. We keep no log of
 opened links — only the wish itself is saved in your space.</p>
 
+<h3>Technical data</h3>
+<p>To deliver notifications we store the <strong>addresses of your devices</strong> (push
+tokens) issued by Apple or Google, along with the platform name and app version — they show
+what is installed on the device and where a notification should go.</p>
+<p>The server keeps <strong>technical logs</strong> of requests: IP address, time, method
+path, response code, the client string (user-agent) and error text. They are used only to investigate failures and to
+protect against abuse, and are kept for <strong>no longer than three days</strong> — after
+that they are erased automatically.</p>
+
 <h3>What we do not collect</h3>
 <p>The app has no analytics, crash reporting, advertising or third-party trackers.
 It does not use the advertising identifier (IDFA) and does not ask for tracking
 permission. It does not collect your location.</p>
 
 <h2>2. Where the data is stored</h2>
-<p>The data is stored with <strong>Google Firebase</strong> — Firebase Authentication,
-Cloud Firestore and Cloud Storage — on Google's cloud infrastructure. Google processes
-this data on our behalf as an infrastructure provider; see the
-<a href="https://firebase.google.com/support/privacy">Firebase Privacy and
-Security policy</a>.</p>
-<p>The Google servers that run the project are located <strong>outside the Russian
-Federation</strong>. What that means is covered in section 10.</p>
+<p>The data is stored and processed <strong>in the Russian Federation</strong>, on
+<strong>Yandex Cloud</strong>, in the <code>ru-central1</code> zone — that is, in Russian
+data centres. Four of its services are involved:</p>
+<ul>
+<li><strong>Yandex Managed Service for YDB</strong> — the database: profiles, couples and all
+your entries;</li>
+<li><strong>Yandex Object Storage</strong> — files: documents, scans, wish pictures, shared
+photos;</li>
+<li><strong>Yandex Cloud Functions and API Gateway</strong> — the server itself, through which
+the app reaches the data;</li>
+<li><strong>Yandex Cloud Postbox</strong> — sending the code email when you sign in by
+email.</li>
+</ul>
+<p>Yandex Cloud processes the data <strong>on our behalf</strong> as an infrastructure
+provider and may not use it for its own purposes.</p>
 <p>Copies of your files are additionally kept in the app's private folder on your
-device, so they can be opened without an internet connection. That folder is inaccessible to other
-apps and protected by the device itself.</p>
+device, so they can be opened without an internet connection. That folder is inaccessible to
+other apps and protected by the device itself.</p>
 
-<h2>3. Who can see your data</h2>
+<h2>3. What happened to the data that was in Firebase</h2>
+<p>Until September 2026 the app ran on Google Firebase, and the data was stored on Google
+servers outside Russia — as the previous edition of this policy stated. In September 2026 we
+moved storage to Russia, to Yandex Cloud.</p>
+<p>While version 1.4 remains in the App Store, the app keeps duplicating records to
+Firebase, and the files of the Documents, Wishes, Notes and Photos sections are stored in
+Google Cloud Storage. The reason is technical: your account identifier was issued by
+Firebase, and the same identifier sits inside your couple's earlier records. Were we to
+switch the duplication off today, a partner on the old version would stop seeing shared
+records and would lose access to their account.</p>
+<p>The duplication ends together with support for version 1.4, after which the copies of
+the data in Firebase are deleted and the files are moved to Yandex Cloud. What still runs
+through Google, and in what volume, is in section 5.</p>
+
+<h2>4. Who can see your data</h2>
 <p>Your entries can be read only by a member of your space: you and the one partner
-you linked with using an invite code. This is enforced by security rules on the
-server that verify membership on every read and write — not just by hiding things in the
-interface.</p>
-<p>Let's be straight: as the owner of the Firebase project, the data controller technically has
+you linked with using an invite code. The code is six characters long, lives for 15 minutes
+and works once. Membership is verified by the server on every read and every write — this is
+not hiding things in the interface, but a server-side check without which the request simply
+does not go through.</p>
+<p>Some entries — capsule letters, your votes and your answers to the question of the day —
+are protected further: the server hands them over only once the section's own rules allow
+them to be opened.</p>
+<p>Let's be straight: as the owner of the cloud project, the data controller technically has
 administrative access to the database. It is used only when necessary — to investigate
 a failure or to comply with a legal requirement — and never to read your content out of
 curiosity.</p>
-<p>We do not pass the data to any other third parties. We do not sell it, rent it
-out or use it for advertising.</p>
+<p>Apart from those we entrust with processing — the next section names them — we pass the
+data to nobody. We do not sell it, rent it out or use it for advertising.</p>
 
-<h2>4. Legal basis and purposes of processing</h2>
-<p>We process the data solely to run the features you use:
-syncing your entries between your devices and your partner's devices and giving you access
-to them offline. Where the GDPR applies, the basis is performance of a contract
-with you (Art. 6(1)(b)) — the service you are asking for cannot exist without storing
-what you put into it. For users in Russia the basis is your
-consent — see section 10.</p>
+<h2>5. Who processes data on our behalf</h2>
+<p>Besides Yandex Cloud, Apple and Google take part in the app's operation — and only in two
+places: signing in and delivering notifications. Here is the honest scope of what each one
+receives.</p>
 
-<h2>5. Retention and deletion</h2>
+<h3>Apple</h3>
+<p><strong>Sign in with Apple</strong>: you sign in on Apple's side, the app receives a signed
+token from them, and we verify the signature. Apple knows that you signed in to
+You&amp;Me.</p>
+<p><strong>Notifications on iPhone and iPad</strong> go straight to the Apple Push
+Notification service, bypassing Google. A notification carries <strong>the name of the
+partner who made the entry, the kind of event</strong> ("New task", "New plan") and a link to
+the section; if it is a shared photo, also a link to that photo, which the phone loads
+itself. The content of your entries is not included: not the text of a task, not the title
+of a wish, not a capsule letter.</p>
+
+<h3>Google</h3>
+<p><strong>Sign in with Google</strong> works the same way as Sign in with Apple: a token
+from Google, the signature verified by us.</p>
+<p><strong>Notifications on Android</strong> can technically only be delivered by Firebase
+Cloud Messaging — otherwise the system will not wake a closed app. So we use FCM as a signal,
+not as a letter: the message carries only <strong>the section name, the kind of event and the
+entry identifier</strong>. No name, no text, no title — the phone composes the notification
+itself, after fetching the data from our server in Russia.</p>
+
+<h3>Yandex Cloud</h3>
+<p>Storing data and files, running the server and sending the sign-in code email — see
+section 2.</p>
+
+<h2>6. Legal basis and purposes of processing</h2>
+<p>We process the data solely to run the features you use: syncing your entries between your
+devices and your partner's devices, giving you access to them offline, notifying you about
+your partner's actions and answering your support requests.</p>
+<p>Where the GDPR applies, the basis is performance of a contract with you (Art. 6(1)(b)) —
+the service you are asking for cannot exist without storing what you put into it. For users
+in Russia the basis is your consent and performance of the contract — see section 11.</p>
+
+<h2>7. Retention and deletion</h2>
 <p>The data is kept for as long as your account exists. You can delete the account right from
 the app: <strong>Us → Couple Settings → Delete Account</strong>. What exactly gets deleted —
 on the <a href="delete-account.html">account deletion page</a>.</p>
-<p>In short: if you are alone in the space, everything is deleted. If you are linked with a partner,
-your profile and your membership are deleted, while the shared archive stays with your partner, because
-it belongs to both of you. In both cases the local copies of files on your device
-are erased.</p>
-<p>Data is removed from the live database immediately. Residual copies may persist for some time
-in the infrastructure provider's backups until they are overwritten.</p>
+<p>In short: if you are alone in the space, everything is deleted. If you are linked with a
+partner, your profile and your membership are deleted, while the shared archive stays with
+your partner, because it belongs to both of you. In both cases the local copies of files on
+your device are erased.</p>
+<p>Data is removed from the live database immediately. Residual copies may persist for some
+time in the cloud infrastructure's backups until they are overwritten. Technical logs erase
+themselves within three days.</p>
 
-<h2>6. Your rights</h2>
-<p>You can request access to your data, its correction or deletion. The fastest
+<h2>8. Your rights</h2>
+<p>You can request access to your data, its correction, blocking or deletion. The fastest
 way to delete is from the app, as described above. For everything else, write to
 <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a> — we will answer as quickly
 as we can. If you are in the EEA or the United Kingdom, you also have the right to lodge a
-complaint with your local data protection authority. If you are in Russia — with Roskomnadzor.</p>
+complaint with your local data protection authority. If you are in Russia — with
+Roskomnadzor.</p>
 
-<h2>7. Children</h2>
+<h2>9. Children</h2>
 <p>You&amp;Me is not intended for children under 13, and we do not knowingly collect their
 data. If you believe a child has created an account, write to us and we will delete it.</p>
 
-<h2>8. Changes to this policy</h2>
+<h2>10. Changes to this policy</h2>
 <p>If the policy changes, the new edition will be published on this page with a new
 date and number at the top. We will announce significant changes inside the app and
 ask you to confirm your consent again.</p>
 
-<h2>9. Contact</h2>
-<p>Dmitry Alekseevich Keller<br>
-<a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a></p>
-
-<h2>10. Personal data processing under Law 152-FZ</h2>
+<h2>11. Personal data processing under Law 152-FZ</h2>
 <p>This section applies to users in the Russian Federation and is written in the terms
 of Federal Law No. 152-FZ of July 27, 2006 "On Personal Data".</p>
 
@@ -172,57 +253,86 @@ Email: <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a></p>
 
 <h3>Personal data processed</h3>
 <ul>
-<li>the Apple ID or Google account identifier and the email address (including Apple's private relay address);</li>
-<li>the account identifier issued by Firebase Authentication;</li>
-<li>the name you entered in your profile, and your date of birth if you provided it;</li>
-<li>the content you create in the app: wishes, plans, trips, tasks,
-votes, calendar events, important dates and birthdays of loved ones, time capsules,
-loyalty cards;</li>
-<li>the files you upload, and their contents.</li>
+<li>the identifier of your Apple or Google account and your email address (including Apple's
+private relay address);</li>
+<li>your name, date of birth and gender, if you provided them, and the app language;</li>
+<li>the content you create in the app: wishes, tasks, lists, notes, plans and trips with
+expenses, calendar events, important dates and birthdays of loved ones, documents, loyalty
+cards, time capsules, polls, answers to the question of the day, shared photos;</li>
+<li>the files you upload, and their contents;</li>
+<li>the addresses of your devices used to deliver notifications (push tokens), the platform
+and the app version;</li>
+<li>technical logs of requests to the server, including the IP address — for no longer than
+three days.</li>
 </ul>
 <p>The app does not collect special categories of personal data or biometric personal
-data. Face ID is performed by iOS itself; the app only receives the
-result of the check. If you choose to upload a document containing
-your personal data into the files section, the data controller processes that file as content of your
-space — the app neither requires nor recommends this.</p>
+data. Face ID is performed by iOS itself; the app only receives the result of the check. If
+you choose to upload a document containing your personal data into the files section, the
+data controller processes that file as content of your space — the app neither requires nor
+recommends this.</p>
 
 <h3>Purposes of processing</h3>
 <ul>
 <li>providing the app's features: storing your entries and syncing them between
 your devices and the devices of the partner you linked your space with;</li>
 <li>access to your entries without an internet connection;</li>
+<li>notifications about your partner's actions;</li>
+<li>signing in to your account and restoring access to it;</li>
+<li>keeping the service working and secure;</li>
 <li>responding to your support requests.</li>
 </ul>
 <p>The data is not used for advertising, profiling, behavioral analytics or transfer to
 third parties.</p>
 
 <h3>Actions performed with the personal data</h3>
-<p>Collection, recording, systematization, accumulation, storage, clarification (updating, modification),
-retrieval, use, transfer (granting access to the partner you linked your
-space with, and cross-border transfer — see below), blocking, deletion, destruction.
-Processing is carried out by mixed means — both automated and
-non-automated.</p>
+<p>Collection, recording, systematization, accumulation, storage, clarification (updating,
+modification), retrieval, use, transfer (granting access to the partner you linked your space
+with, entrusting processing to the parties named in section 5, and cross-border transfer in
+the volume described below), blocking, deletion, destruction. Processing is carried out by
+mixed means — both automated and non-automated.</p>
 
 <h3>Legal basis</h3>
-<p>The consent of the personal data subject (clause 1, part 1, article 6 of Law 152-FZ), which you give when
-signing in to the app, and performance of a contract to which you are a party
+<p>The consent of the personal data subject (clause 1, part 1, article 6 of Law 152-FZ), which
+you give when signing in to the app, and performance of a contract to which you are a party
 (clause 5, part 1, article 6 of Law 152-FZ). The text of the consent is
 <a href="consent-en.html">on a separate page</a>.</p>
 
+<h3>Place of processing</h3>
+<p>The collection, recording, systematization, accumulation, storage, clarification and
+retrieval of personal data of citizens of the Russian Federation are carried out using
+databases located <strong>in the Russian Federation</strong> (part 5, article 18 of Law
+152-FZ) — on Yandex Cloud, zone <code>ru-central1</code>.</p>
+
 <h3>Cross-border transfer</h3>
-<p>The data is stored and processed on Google servers (Google LLC, Google Ireland
-Limited) outside the Russian Federation. By using the app, you consent to the
-cross-border transfer of your personal data to the countries where Google's
-infrastructure is located. This is stated explicitly in the
-<a href="consent-en.html">text of the consent</a>.</p>
+<p>Data is transferred outside the Russian Federation <strong>in a limited volume</strong>
+and only for two purposes:</p>
+<ul>
+<li><strong>signing in</strong> — an exchange with Apple Inc. and Google LLC when verifying
+the sign-in token;</li>
+<li><strong>delivering notifications</strong> — Apple Inc. (Apple Push Notification service)
+receives the name of the entry's author, the kind of event and a link to the section; Google
+LLC (Firebase Cloud Messaging, Android only) receives the section name, the kind of event and
+the entry identifier, without any content.</li>
+</ul>
+<p>Until support for version 1.4 ends, more than that leaves Russia: records are
+duplicated there and uploaded files are stored there — the details and the timeline are in
+section 3. Once support for version 1.4 ends, the content of your entries and the files you
+upload will not be transferred outside the Russian Federation. You give consent to this
+transfer through the
+<a href="consent-en.html">text of the consent</a>; without it, notifications and signing in
+with Apple or Google cannot work.</p>
 
 <h3>Duration of processing and withdrawal of consent</h3>
-<p>The data is processed for as long as your account exists, or until you withdraw your consent. You can
-withdraw the consent by deleting your account in the app (<strong>Us → Couple Settings → Delete
-Account</strong>) or by writing to
+<p>The data is processed for as long as your account exists, or until you withdraw your
+consent. You can withdraw the consent by deleting your account in the app (<strong>Us →
+Couple Settings → Delete Account</strong>) or by writing to
 <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a>. Withdrawing consent means
-processing stops and the data is deleted as described in section 5: entries that
-belong to both of you stay with your partner.</p>
+processing stops and the data is deleted as described in section 7: entries that belong to
+both of you stay with your partner.</p>
+
+<h2>12. Contact</h2>
+<p>Dmitry Alekseevich Keller<br>
+<a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a></p>
 
 
 </main>

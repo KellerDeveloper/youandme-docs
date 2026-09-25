@@ -86,6 +86,10 @@ li { margin: 7px 0; }
 
 strong { color: var(--fg); font-weight: 600; }
 
+/* Названия сервисов и зон в документах: ru-central1 и подобное. Не блок кода — строчная
+   пометка, поэтому только шрифт и цвет, без подложки. */
+code { font: 400 .92em/1 var(--mono); color: var(--fg); }
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
