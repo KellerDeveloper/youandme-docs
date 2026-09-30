@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>You&amp;Me — премиум</title>
-<meta name="description" content="Премиум You&amp;Me: фото друг друга на домашнем экране. Оформляет один — работает у обоих, без автосписаний.">
+<meta name="description" content="Премиум You&amp;Me: вопрос дня, фото друг друга на домашнем экране, тест на совместимость, игры на двоих и голосовые в чате. Оформляет один — работает у обоих, без автосписаний.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -30,6 +30,14 @@
 .feature .icon { color: var(--accent); margin-bottom: 14px; }
 .feature h3 { margin: 0; font: 700 16px/1.2 var(--sans); }
 .feature p { margin: 9px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
+
+/* ── скачать ───────────────────────────────────────────── */
+
+/* Ссылки на сторы — те же кнопки, что у оплаты, но это <a>: сбрасываем подчёркивание
+   и цвет ссылок из style.css. */
+.stores { margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap; }
+a.btn { display: inline-block; text-decoration: none; color: var(--fg); }
+a.btn:hover { color: var(--fg); }
 
 /* ── шаги ──────────────────────────────────────────────── */
 
@@ -168,6 +176,7 @@
   .plan.best .plan-note { display: block; }
   .plan-badge { top: -8px; right: 12px; }
   .pay .btn { flex: 1; padding: 16px 20px; text-align: center; }
+  .stores .btn { flex: 1 1 auto; padding: 16px 20px; text-align: center; }
   .foot { flex-direction: column; gap: 18px; }
 }
 </style>
@@ -191,7 +200,7 @@
 
 <section class="lead">
   <h1>Премиум</h1>
-  <p>Вопрос дня · виджет с фото · одна оплата на двоих</p>
+  <p>Вопрос дня · виджет с фото · совместимость · игры · голосовые · одна оплата на двоих</p>
 </section>
 
 
@@ -207,14 +216,36 @@
     <p>Партнёр выбирает кадр — он появляется у вас на экране в течение часа.</p>
   </div>
   <div class="feature">
+    <span class="icon">favorite</span>
+    <h3>Тест на совместимость</h3>
+    <p>Тридцать вопросов, каждый отвечает вслепую. Когда прошли оба — отчёт о вашей паре. Без премиума открыты первые три блока, с ним — все шестнадцать.</p>
+  </div>
+  <div class="feature">
+    <span class="icon">sports_esports</span>
+    <h3>Игры на двоих</h3>
+    <p>Шашки, морской бой, дурак, реверси, «4 в ряд», точки и квадратики — онлайн или рядом по Bluetooth. Крестики-нолики бесплатно.</p>
+  </div>
+  <div class="feature">
+    <span class="icon">mic</span>
+    <h3>Голосовые в чате</h3>
+    <p>Наговорить, когда печатать некогда. Текст, фото и файлы в чате остаются бесплатными.</p>
+  </div>
+  <div class="feature">
     <span class="icon">group</span>
     <h3>Одна оплата на двоих</h3>
     <p>Премиум привязан к паре, а не к человеку. Можно оформить как подарок.</p>
   </div>
-  <div class="feature">
-    <span class="icon">rocket_launch</span>
-    <h3>Всё новое впереди</h3>
-    <p>Премиум оплачивает разработку: следующие функции выходят в нём же.</p>
+</section>
+
+<section class="step" id="skachat">
+  <h2>Скачать приложение</h2>
+  <p>Премиум оформляется по коду из приложения, так что сначала установите его. На Android —
+    из RuStore или файлом APK из телеграм-канала.</p>
+
+  <div class="stores">
+    <a class="btn btn-secondary" href="https://apps.apple.com/ru/app/you-me/id6801322823" target="_blank" rel="noopener">App Store</a>
+    <a class="btn btn-secondary" href="https://www.rustore.ru/catalog/app/keller.youandme" target="_blank" rel="noopener">RuStore</a>
+    <a class="btn btn-secondary" href="https://t.me/KellerChanel" target="_blank" rel="noopener">APK в Telegram</a>
   </div>
 </section>
 
@@ -325,8 +356,9 @@
 
   <div class="qa">
     <h3>Что будет с тем, чем я уже пользуюсь?</h3>
-    <p>Ничего. Хотелки, документы, карты, планы, календарь, задачи и капсулы остаются
-      бесплатными навсегда. Премиум — только про новое.</p>
+    <p>Ничего. Хотелки, документы, карты, планы, календарь, задачи, капсулы, чат
+      с текстом, фото и файлами, крестики-нолики остаются бесплатными навсегда.
+      Премиум — только про новое.</p>
   </div>
   <div class="qa">
     <h3>Деньги будут списываться сами?</h3>
