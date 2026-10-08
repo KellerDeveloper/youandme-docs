@@ -319,7 +319,7 @@ a.btn:hover { color: var(--fg); }
 
   <div class="legal">
     Нажимая «Оплатить», вы принимаете <a href="offer.html">оферту</a>
-    и <a href="privacy-ru.html">политику конфиденциальности</a>. Чек придёт на почту из ЮKassa.
+    и <a href="privacy-ru.html">политику конфиденциальности</a>. Чек придёт на почту.
   </div>
 
   <div class="pay-error" id="payError" role="status" aria-live="polite"></div>
@@ -345,7 +345,7 @@ a.btn:hover { color: var(--fg); }
   </div>
 
   <div class="legal">
-    От 10 до 15 000 ₽. Чек придёт на почту из ЮKassa.
+    От 10 до 15 000 ₽. Чек придёт на почту.
   </div>
 
   <div class="pay-error" id="tipError" role="status" aria-live="polite"></div>
@@ -379,8 +379,8 @@ a.btn:hover { color: var(--fg); }
 
 <footer class="foot">
   <div class="foot-req">
-    Самозанятый Келлер Д. А.<br>
-    ИНН 661401740383<br>
+    ИП Келлер А. В.<br>
+    ИНН 661404240879 · ОГРНИП 326965800259498<br>
     <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a>
   </div>
   <div class="foot-links">
@@ -589,7 +589,7 @@ if (back.get("paid")) {
 
 // Возврат с доната — свой, потому что премиума за него не будет и обещать его нельзя.
 if (back.get("thanks")) {
-  tipError.textContent = "Спасибо. Чек придёт на почту из ЮKassa.";
+  tipError.textContent = "Спасибо. Чек придёт на почту.";
   tipError.classList.add("shown");
   tipError.scrollIntoView({ behavior: "smooth", block: "center" });
 }
