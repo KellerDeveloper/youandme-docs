@@ -144,6 +144,8 @@ a.btn:hover { color: var(--fg); }
 }
 .tip-own::placeholder { color: var(--dim); font-weight: 400; }
 .tip-own:focus { outline: none; border-color: var(--accent); }
+/* Почта для чека: то же поле, что «своя сумма», шириной с блок кода. */
+.pay-email { display: block; width: 100%; max-width: 420px; margin-top: 22px; }
 
 /* ── вопросы ───────────────────────────────────────────── */
 
@@ -312,6 +314,9 @@ a.btn:hover { color: var(--fg); }
     </button>
   </div>
 
+  <input class="tip-own pay-email" id="payEmail" type="email" inputmode="email" autocomplete="email"
+         spellcheck="false" placeholder="Почта для чека" aria-label="Почта для чека">
+
   <div class="pay">
     <button type="button" class="btn btn-primary" id="paySbp">Оплатить 899 ₽ через СБП</button>
     <button type="button" class="btn btn-secondary" id="payCard">Картой</button>
@@ -338,6 +343,9 @@ a.btn:hover { color: var(--fg); }
     <input class="tip-own" id="tipOwn" inputmode="decimal" autocomplete="off"
            placeholder="своя сумма" aria-label="Своя сумма доната">
   </div>
+
+  <input class="tip-own pay-email" id="tipEmail" type="email" inputmode="email" autocomplete="email"
+         spellcheck="false" placeholder="Почта для чека" aria-label="Почта для чека">
 
   <div class="pay">
     <button type="button" class="btn btn-primary" id="tipSbp">Поддержать на 300 ₽ через СБП</button>
@@ -471,12 +479,23 @@ plansBox.addEventListener("click", e => {
   sbpBtn.textContent = "Оплатить " + Number(plan.dataset.price).toLocaleString("ru-RU") + " ₽ через СБП";
 });
 
+// Почта для чека. По 54-ФЗ чек уходит покупателю, а ЮKassa сама её на своей форме
+// не спрашивает. Проверка грубая — точнее проверит ЮKassa.
+const payEmail = document.getElementById("payEmail");
+const emailOk = input => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+
 async function pay(method) {
   payError.classList.remove("shown");
   if (code().length !== 6) {
     payError.textContent = "Сначала введите код привязки из приложения — иначе премиум некуда зачислить.";
     payError.classList.add("shown");
     cells[0].focus();
+    return;
+  }
+  if (!emailOk(payEmail)) {
+    payError.textContent = "Укажите почту — на неё придёт чек.";
+    payError.classList.add("shown");
+    payEmail.focus();
     return;
   }
   if (!PAY_ENDPOINT) {
@@ -489,7 +508,7 @@ async function pay(method) {
     const r = await fetch(PAY_ENDPOINT + "/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: code(), plan: selected.dataset.plan, method })
+      body: JSON.stringify({ code: code(), plan: selected.dataset.plan, method, email: payEmail.value.trim() })
     });
     const data = await r.json();
     if (data.confirmationUrl) location.href = data.confirmationUrl;
@@ -512,6 +531,7 @@ const tipOwn = document.getElementById("tipOwn");
 const tipSbp = document.getElementById("tipSbp");
 const tipCard = document.getElementById("tipCard");
 const tipError = document.getElementById("tipError");
+const tipEmail = document.getElementById("tipEmail");
 
 let tipChip = tipsBox.querySelector('[aria-pressed="true"]');
 
@@ -555,12 +575,18 @@ async function tip(method) {
     tipOwn.focus();
     return;
   }
+  if (!emailOk(tipEmail)) {
+    tipError.textContent = "Укажите почту — на неё придёт чек.";
+    tipError.classList.add("shown");
+    tipEmail.focus();
+    return;
+  }
   tipSbp.disabled = tipCard.disabled = true;
   try {
     const r = await fetch(PAY_ENDPOINT + "/donate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount, method })
+      body: JSON.stringify({ amount, method, email: tipEmail.value.trim() })
     });
     const data = await r.json();
     if (data.confirmationUrl) location.href = data.confirmationUrl;
