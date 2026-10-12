@@ -23,14 +23,6 @@
 .lead h1 { margin: 0; font: 800 25px/1.1 var(--sans); letter-spacing: -.03em; }
 .lead p { margin: 10px 0 0; font-size: 13px; color: var(--muted); text-wrap: pretty; }
 
-/* ── авария ────────────────────────────────────────────── */
-
-/* Плашка об аварии Яндекс Облака 11.10.2026. Уходит вместе с константой OUTAGE в скрипте. */
-.outage { margin-top: 28px; padding: 18px 20px; border-radius: 18px; background: var(--card); border: 1px solid var(--brand); display: flex; gap: 14px; }
-.outage .icon { color: var(--brand); font-size: 22px; }
-.outage h2 { margin: 0; font: 700 16px/1.3 var(--sans); }
-.outage p { margin: 7px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
-
 /* ── что даёт ──────────────────────────────────────────── */
 
 .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; padding: 48px 0 52px; }
@@ -207,18 +199,6 @@ a.btn:hover { color: var(--fg); }
     <a href="/#kod" class="ghost">Оформить</a>
   </nav>
 </header>
-
-<section class="outage" role="status">
-  <span class="icon">cloud_off</span>
-  <div>
-    <h2>Оплата временно не работает</h2>
-    <p>11 октября с 4 утра по Москве лежит Яндекс Облако, где живёт наш сервер: у Яндекса
-      авария в дата-центре. Пока его не поднимут, сайт не может проверить код и принять оплату,
-      а в приложении могут не синхронизироваться изменения.</p>
-    <p>Повлиять на это мы не можем. Как только Яндекс починит, всё заработает само.
-      Код привязки не изменится — загляните сюда позже.</p>
-  </div>
-</section>
 
 <section class="lead">
   <h1>Премиум</h1>
@@ -429,12 +409,7 @@ a.btn:hover { color: var(--fg); }
 // 19.09.2026 откатили в тот же час: коды привязки живых пар лежали только в Firestore,
 // и сайт отвечал «такого кода нет» всем подряд. Теперь сервер ищет код в обеих базах.
 // Адрес уведомлений ЮKassa (…/pay/webhook) меняется руками в её кабинете — вместе с этим.
-const PAY_ENDPOINT = "https://d5dnoul9e8l8nv79urvg.g4vq2kuy.apigw.yandexcloud.net/pay";
-
-// Авария Яндекс Облака с 11.10.2026: шлюз не отвечает, и fetch висит минутами без ответа.
-// Пока true — код и оплата сразу говорят, что сломано. Поднимется — false и убрать .outage.
-const OUTAGE = true;
-const OUTAGE_TEXT = "Оплата временно не работает: наш сервер лежит вместе с Яндекс Облаком. Загляните позже — код привязки не изменится.";
+const PAY_ENDPOINT = "https://api.youandme-app.ru/pay";
 
 const cells = [...document.querySelectorAll("#cells input")];
 const statusBox = document.getElementById("codeStatus");
@@ -478,10 +453,6 @@ cells.forEach((cell, i) => {
 });
 
 async function checkCode() {
-  if (OUTAGE) {
-    status("warn", "Сейчас код не проверить", "Сервер лежит вместе с Яндекс Облаком — подробности вверху страницы.");
-    return;
-  }
   if (!PAY_ENDPOINT) {
     status("warn", "Приём оплаты подключается",
       "Код запомнится — вернитесь на страницу через пару дней.");
@@ -515,11 +486,6 @@ const emailOk = input => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
 
 async function pay(method) {
   payError.classList.remove("shown");
-  if (OUTAGE) {
-    payError.textContent = OUTAGE_TEXT;
-    payError.classList.add("shown");
-    return;
-  }
   if (code().length !== 6) {
     payError.textContent = "Сначала введите код привязки из приложения — иначе премиум некуда зачислить.";
     payError.classList.add("shown");
@@ -602,11 +568,6 @@ tipOwn.addEventListener("input", () => {
 
 async function tip(method) {
   tipError.classList.remove("shown");
-  if (OUTAGE) {
-    tipError.textContent = OUTAGE_TEXT;
-    tipError.classList.add("shown");
-    return;
-  }
   const amount = tipAmount();
   if (!amount) {
     tipError.textContent = "Выберите сумму или впишите свою.";
