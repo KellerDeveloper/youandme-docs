@@ -87,12 +87,13 @@ a:hover { color: var(--fg); }
 
 .top { display: flex; justify-content: space-between; align-items: center; padding: 26px 0; gap: 16px; }
 .brand { display: flex; gap: 11px; align-items: center; text-decoration: none; }
-/* Пара кружков вместо иконки: те же два цвета, которыми приложение метит двоих. */
-.brand-dots { display: flex; align-items: center; flex: none; }
-.brand-dots i { width: 26px; height: 26px; border-radius: 50%; display: block; }
-.brand-dots i:first-child { background: var(--accent); }
-.brand-dots i:last-child { background: var(--brand); margin-left: -9px; }
-.brand-name { font: 700 17px/1 var(--sans); color: var(--fg); }
+/* Знак 21b из макета «Логотип» — тот же, что LogoMark.swift в приложении и в мини-аппе:
+   «You» цветом первого участника над «&Me» цветом второго. Поле 100×100, кегль 37,
+   базовые линии 45 и 81, трекинг −1.5 — числа из SVG макета, менять только вместе с ним. */
+.brand-mark { display: block; flex: none; width: 46px; height: 46px; }
+.brand-mark text { font: 800 37px var(--sans); letter-spacing: -1.5px; text-anchor: middle; }
+.brand-mark text:first-child { fill: var(--accent); }
+.brand-mark text:last-child { fill: var(--brand); }
 .nav-top { display: flex; gap: 26px; align-items: center; }
 .nav-top a { font: 500 13.5px/1 var(--sans); color: var(--muted); text-decoration: none; }
 .nav-top a:hover { color: var(--fg); }
