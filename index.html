@@ -5,11 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>You&amp;Me — премиум</title>
 <meta name="description" content="Премиум You&amp;Me: вопрос дня, фото друг друга на домашнем экране, тест на совместимость, игры на двоих и голосовые в чате. Оформляет один — работает у обоих, без автосписаний.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,300,0..1,0&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="cookie.js" defer></script>
 <style>
 /* Стили только этой страницы. Палитра, шапка, подвал и типографика — в style.css */
 
@@ -146,6 +143,15 @@ a.btn:hover { color: var(--fg); }
 .tip-own:focus { outline: none; border-color: var(--accent); }
 /* Почта для чека: то же поле, что «своя сумма», шириной с блок кода. */
 .pay-email { display: block; width: 100%; max-width: 420px; margin-top: 22px; }
+/* Галочка согласия на ПДн — по инструкции юриста для РКН: по умолчанию снята, без неё
+   кнопки оплаты неактивны (agree() в скрипте). Ссылки — в новой вкладке, чтобы человек
+   прочитал документ и не потерял введённый код и почту. */
+.agree {
+  display: flex; gap: 12px; align-items: flex-start; max-width: 520px; margin-top: 18px;
+  font: 400 13px/1.5 var(--sans); color: var(--mid); text-wrap: pretty; cursor: pointer;
+}
+.agree input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.agree a { color: var(--fg); }
 
 /* ── вопросы ───────────────────────────────────────────── */
 
@@ -317,14 +323,20 @@ a.btn:hover { color: var(--fg); }
   <input class="tip-own pay-email" id="payEmail" type="email" inputmode="email" autocomplete="email"
          spellcheck="false" placeholder="Почта для чека" aria-label="Почта для чека">
 
+  <label class="agree">
+    <input type="checkbox" id="payAgree">
+    <span>Нажимая кнопку, я даю своё <a href="consent-ru.html" target="_blank" rel="noopener">Согласие
+      на обработку персональных данных</a> и соглашаюсь с <a href="privacy-ru.html" target="_blank" rel="noopener">Политикой
+      обработки персональных данных</a></span>
+  </label>
+
   <div class="pay">
-    <button type="button" class="btn btn-primary" id="paySbp">Оплатить 899 ₽ через СБП</button>
-    <button type="button" class="btn btn-secondary" id="payCard">Картой</button>
+    <button type="button" class="btn btn-primary" id="paySbp" disabled>Оплатить 899 ₽ через СБП</button>
+    <button type="button" class="btn btn-secondary" id="payCard" disabled>Картой</button>
   </div>
 
   <div class="legal">
-    Нажимая «Оплатить», вы принимаете <a href="offer.html">оферту</a>
-    и <a href="privacy-ru.html">политику конфиденциальности</a>. Чек придёт на почту.
+    Нажимая «Оплатить», вы принимаете <a href="offer.html">оферту</a>. Чек придёт на почту.
   </div>
 
   <div class="pay-error" id="payError" role="status" aria-live="polite"></div>
@@ -347,9 +359,16 @@ a.btn:hover { color: var(--fg); }
   <input class="tip-own pay-email" id="tipEmail" type="email" inputmode="email" autocomplete="email"
          spellcheck="false" placeholder="Почта для чека" aria-label="Почта для чека">
 
+  <label class="agree">
+    <input type="checkbox" id="tipAgree">
+    <span>Нажимая кнопку, я даю своё <a href="consent-ru.html" target="_blank" rel="noopener">Согласие
+      на обработку персональных данных</a> и соглашаюсь с <a href="privacy-ru.html" target="_blank" rel="noopener">Политикой
+      обработки персональных данных</a></span>
+  </label>
+
   <div class="pay">
-    <button type="button" class="btn btn-primary" id="tipSbp">Поддержать на 300 ₽ через СБП</button>
-    <button type="button" class="btn btn-secondary" id="tipCard">Картой</button>
+    <button type="button" class="btn btn-primary" id="tipSbp" disabled>Поддержать на 300 ₽ через СБП</button>
+    <button type="button" class="btn btn-secondary" id="tipCard" disabled>Картой</button>
   </div>
 
   <div class="legal">
@@ -387,15 +406,16 @@ a.btn:hover { color: var(--fg); }
 
 <footer class="foot">
   <div class="foot-req">
-    ИП Келлер А. В.<br>
+    ИП Келлер Анна Владимировна<br>
     ИНН 661404240879 · ОГРНИП 326965800259498<br>
-    <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a>
+    Email: <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a>
   </div>
   <div class="foot-links">
     <a href="offer.html">Оферта</a>
-    <a href="privacy-ru.html">Политика конфиденциальности</a>
-    <a href="consent-ru.html">Согласие на обработку ПД</a>
+    <a href="privacy-ru.html">Политика обработки персональных данных</a>
+    <a href="consent-ru.html">Согласие на обработку персональных данных</a>
     <a href="support.html">Поддержка</a>
+    <a href="delete-account.html">Удаление аккаунта</a>
   </div>
 </footer>
 
@@ -484,6 +504,16 @@ plansBox.addEventListener("click", e => {
 const payEmail = document.getElementById("payEmail");
 const emailOk = input => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
 
+// Галочка согласия: кнопки активны, только пока она стоит. Возвращает ту же сверку —
+// ею кнопки и включаются обратно после неудачной попытки оплаты.
+function agree(box, ...buttons) {
+  const sync = () => buttons.forEach(b => b.disabled = !box.checked);
+  box.addEventListener("change", sync);
+  sync();
+  return sync;
+}
+const payAgreed = agree(document.getElementById("payAgree"), sbpBtn, cardBtn);
+
 async function pay(method) {
   payError.classList.remove("shown");
   if (code().length !== 6) {
@@ -516,7 +546,7 @@ async function pay(method) {
   } catch {
     payError.textContent = "Не получилось начать оплату. Попробуйте ещё раз, а если повторится — напишите на почту из подвала.";
     payError.classList.add("shown");
-    sbpBtn.disabled = cardBtn.disabled = false;
+    payAgreed();
   }
 }
 
@@ -532,6 +562,7 @@ const tipSbp = document.getElementById("tipSbp");
 const tipCard = document.getElementById("tipCard");
 const tipError = document.getElementById("tipError");
 const tipEmail = document.getElementById("tipEmail");
+const tipAgreed = agree(document.getElementById("tipAgree"), tipSbp, tipCard);
 
 let tipChip = tipsBox.querySelector('[aria-pressed="true"]');
 
@@ -596,7 +627,7 @@ async function tip(method) {
     // всегда это именно сумма, а не сбой. Поэтому подсказываем про неё.
     tipError.textContent = "Не получилось начать оплату. Проверьте сумму — она должна быть от 10 до 15 000 ₽.";
     tipError.classList.add("shown");
-    tipSbp.disabled = tipCard.disabled = false;
+    tipAgreed();
   }
 }
 
