@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You&amp;Me — приложение для пар</title>
+<meta name="description" content="Задачи, календарь, хотелки, планы и документы пары в одном приложении. Что добавил один — второй видит сразу. Бесплатно для iPhone, iPad и Android.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<script src="cookie.js" defer></script>
+<style>
+/* Главная о приложении — по макету «You&Me - Главная сайта.dc.html» (проект claude.ai/design
+   «YouAndMe приложение»). Лендинг премиума остаётся на корне: этот адрес называет приложение.
+   Макет нарисован в двух ширинах — десктоп 1200 и телефон; между ними герой встаёт в столбик. */
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.wrap { max-width: 1200px; padding: 0 80px; }
+
+/* ── герой ── */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) 480px; gap: 40px; align-items: center; padding: 36px 0 0; }
+.hero-text { padding-bottom: 60px; }
+.hero h1 { margin: 20px 0 0; font: 800 58px/1.02 var(--sans); letter-spacing: -.035em; text-wrap: balance; }
+.hero p { margin: 22px 0 0; font: 400 18px/1.55 var(--sans); color: var(--mid); max-width: 500px; }
+.stores { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; scroll-margin-top: 120px; }
+.stores a { display: flex; align-items: center; justify-content: center; gap: 9px; font: 500 15px/1 var(--sans); border-radius: 14px; padding: 16px 26px; border: 1px solid var(--line); color: var(--fg); text-decoration: none; }
+.stores a:hover { border-color: var(--mid); color: var(--fg); }
+.stores a.primary { font-weight: 700; background: var(--fg); color: var(--on-light); border-color: var(--fg); }
+.stores a.primary:hover { background: #fff; border-color: #fff; color: var(--on-light); }
+.hero-note { margin-top: 20px; font: 400 12.5px/1.5 var(--mono); color: var(--dim); }
+
+/* Лента: карточки въезжают сбоку — синие от Дмитрия, коралловые от Софьи — и уходят вниз. */
+.feed-box { position: relative; height: 560px; overflow: hidden; }
+.feed { position: relative; width: 480px; height: 560px; transform-origin: top left; }
+.feed-who { position: absolute; top: 6px; display: flex; align-items: center; gap: 8px; font: 500 12px/1 var(--mono); color: var(--muted); }
+.feed-who i { width: 10px; height: 10px; border-radius: 50%; }
+.feed-card { position: absolute; left: 50px; top: 50px; width: 380px; background: var(--card); border-radius: 18px; padding: 14px 16px; display: flex; gap: 14px; align-items: center; transition: transform 1.1s cubic-bezier(.22,1,.36,1), opacity .9s ease; }
+.feed-card .ic { flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.feed-card .tx { flex: 1; min-width: 0; }
+.feed-card .tt { font: 600 14.5px/1.25 var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed-card .mt { margin-top: 5px; font: 400 11.5px/1.3 var(--mono); color: var(--muted); }
+.feed-card .sc { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; font: 400 10.5px/1 var(--mono); color: var(--dim); }
+.feed-card .sc i { width: 9px; height: 9px; border-radius: 50%; }
+
+/* ── блоки ── */
+.block { padding: 56px 0; border-top: 1px solid var(--line-soft); }
+.block h2 { margin: 0; font: 700 30px/1.1 var(--sans); letter-spacing: -.02em; }
+.steps { margin-top: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.step { background: var(--card); border-radius: 20px; padding: 24px 22px; }
+.step-n { font: 500 11.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+.step-t { margin-top: 16px; font: 700 18px/1.25 var(--sans); }
+.step-p { margin-top: 9px; font: 400 14px/1.55 var(--sans); color: var(--muted); text-wrap: pretty; }
+.cells { margin-top: 16px; display: flex; gap: 6px; }
+.cells span { width: 30px; height: 36px; border-radius: 9px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font: 600 16px/1 var(--mono); }
+.pair { margin-top: 16px; display: flex; }
+.pair i { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); }
+.pair i + i { background: var(--brand); margin-left: -10px; }
+
+.inside-head { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+.inside-sub { font: 400 12.5px/1.5 var(--mono); color: var(--dim); }
+.chips { margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.chip { cursor: pointer; display: flex; align-items: center; gap: 7px; padding: 9px 13px; border: 0; border-radius: 11px; background: var(--card); color: var(--muted); font: 500 13px/1 var(--sans); transition: background .3s, color .3s; }
+.chip:hover { color: var(--fg); }
+.chip.on { background: var(--fg); color: var(--on-light); }
+.chip .icon { font-size: 17px; }
+
+/* Карусель: двенадцать телефонов по кругу, выбранный в центре, соседи мельче и бледнее. */
+.car-view { position: relative; height: 600px; margin-top: 36px; overflow: hidden; touch-action: pan-y; }
+.car-stage { position: absolute; inset: 0; }
+.car-item { position: absolute; left: 50%; top: 0; width: 279px; height: 587px; margin-left: -140px; cursor: pointer; transition: transform .8s cubic-bezier(.22,1,.36,1), opacity .6s ease; }
+.car-fade { position: absolute; top: 0; bottom: 0; width: 140px; z-index: 15; pointer-events: none; }
+.car-fade.l { left: 0; background: linear-gradient(to right, var(--bg), rgba(14,15,19,0)); }
+.car-fade.r { right: 0; background: linear-gradient(to left, var(--bg), rgba(14,15,19,0)); }
+.car-arrow { position: absolute; top: 250px; z-index: 20; width: 48px; height: 48px; border-radius: 50%; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--fg); padding: 0; transition: background .2s, border-color .2s; }
+.car-arrow:hover { background: var(--line-soft); border-color: var(--dim); }
+.car-arrow.l { left: 0; }
+.car-arrow.r { right: 0; }
+.car-arrow .icon { font-size: 22px; }
+.car-cap { margin-top: 22px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+.car-num { font: 400 12px/1 var(--mono); color: var(--dim); }
+.car-title { font: 700 24px/1.2 var(--sans); letter-spacing: -.02em; }
+.car-text { font: 400 15px/1.55 var(--sans); color: var(--muted); max-width: 440px; text-wrap: pretty; }
+
+/* ── между телефоном и десктопом: герой в столбик ── */
+@media (max-width: 1079px) {
+  .wrap { padding: 0 40px; }
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-text { padding-bottom: 0; }
+  .feed-box { width: 480px; max-width: 100%; margin: 0 auto 40px; }
+}
+
+/* ── телефон (макет 1b) ── */
+@media (max-width: 760px) {
+  .wrap { padding: 0 20px; }
+  .d-only { display: none; }
+  .top { padding: 12px 0; }
+  .brand svg { width: 38px; height: 38px; }
+  .nav-top a.ghost { font-size: 13px; padding: 8px 12px; }
+
+  .hero { display: block; padding: 0; }
+  .hero .eyebrow { margin-top: 14px; font-size: 10.5px; }
+  .hero h1 { margin-top: 12px; font-size: 30px; line-height: 1.05; letter-spacing: -.03em; }
+  .hero p { margin-top: 12px; font-size: 14px; line-height: 1.5; }
+  .stores { margin-top: 18px; gap: 8px; scroll-margin-top: 20px; }
+  .stores a { flex: 1; font-size: 14px; border-radius: 12px; padding: 14px 8px; }
+  .stores a.primary { flex: 1 0 100%; padding: 14px; }
+  .hero-note { margin-top: 12px; font-size: 11px; }
+
+  /* Лента та же, что на десктопе, только уменьшена под ширину: скрипт ставит масштаб. */
+  .feed-box { width: 100%; height: auto; aspect-ratio: 280 / 322; margin: 24px 0 0; }
+  .feed-who { font-size: 17px; }
+  .feed-who i { width: 14px; height: 14px; }
+  .feed-card { left: 0; width: 480px; }
+
+  .block { padding: 28px 0 0; margin-top: 28px; }
+  .block h2 { font-size: 22px; }
+  .steps { margin-top: 16px; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .step { border-radius: 16px; padding: 16px 16px 18px; }
+  .step-n { font-size: 10px; }
+  .step-t { margin-top: 10px; font-size: 15px; }
+  .step-p { margin-top: 6px; font-size: 12.5px; line-height: 1.5; }
+  .cells, .pair { display: none; }
+
+  .block-inside { margin-top: 32px; }
+  .inside-head { display: block; }
+  .inside-sub { margin-top: 6px; font-size: 11px; }
+  .chips { margin: 16px -20px 0; padding: 0 20px; gap: 6px; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: none; white-space: nowrap; padding: 8px 11px; border-radius: 10px; font-size: 12px; }
+
+  .car-view { margin: 22px -20px 0; height: 372px; }
+  .car-stage { inset: auto; left: 50%; top: 0; width: 484px; height: 600px; margin-left: -242px; transform: scale(.62); transform-origin: top center; }
+  .car-fade, .car-arrow { display: none; }
+  .car-cap { margin-top: 14px; gap: 7px; }
+  .car-num { font-size: 11px; }
+  .car-title { font-size: 18px; letter-spacing: 0; }
+  .car-text { font-size: 13px; line-height: 1.5; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="/home">
+    <svg width="46" height="46" viewBox="0 0 100 100" role="img" aria-label="You&amp;Me" font-family="Onest, Manrope, system-ui, sans-serif" font-weight="800" font-size="37" letter-spacing="-1.5" text-anchor="middle"><text x="50" y="45" fill="#4C9DEB">You</text><text x="50" y="81" fill="#E2726B">&amp;Me</text></svg>
+  </a>
+  <nav class="nav-top">
+    <a href="#razdely">Разделы</a>
+    <a href="support.html">Поддержка</a>
+    <a href="#skachat" class="ghost">Скачать</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <div class="eyebrow">Приложение для двоих</div>
+    <h1>Общие дела пары — в одном месте</h1>
+    <p>Задачи, календарь, хотелки, планы и документы. Что добавил один — второй видит сразу<span class="d-only">, без пересылок в мессенджере</span>.</p>
+    <div class="stores" id="skachat">
+      <a class="primary" href="https://apps.apple.com/ru/app/you-me/id6801322823" target="_blank" rel="noopener">App Store</a>
+      <a href="https://www.rustore.ru/catalog/app/keller.youandme" target="_blank" rel="noopener">RuStore</a>
+      <a href="https://t.me/KellerChanel" target="_blank" rel="noopener">APK в Telegram</a>
+    </div>
+    <div class="hero-note">Бесплатно · iPhone, iPad и Android<span class="d-only"> · данные хранятся в России</span></div>
+  </div>
+  <div class="feed-box" aria-hidden="true">
+    <div class="feed" id="feed">
+      <div class="feed-who" style="left:0"><i style="background:var(--accent)"></i>Дмитрий</div>
+      <div class="feed-who" style="right:0">Софья<i style="background:var(--brand)"></i></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <h2>Как начать вдвоём</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">Шаг 1</div>
+      <div class="step-t">Войдите</div>
+      <div class="step-p">Через Apple, Яндекс, VK, Google или почту. Можно начать одному — пока партнёра нет, всё копится у вас.</div>
+    </div>
+    <div class="step">
+      <div class="step-n">Шаг 2</div>
+      <div class="step-t">Позовите партнёра</div>
+      <div class="step-p">Отправьте код из шести символов. Партнёр вводит его у себя — и вас двое.</div>
+      <div class="cells" aria-hidden="true"><span>K</span><span>7</span><span>M</span><span>Q</span><span>2</span><span>X</span></div>
+    </div>
+    <div class="step">
+      <div class="step-n">Шаг 3</div>
+      <div class="step-t">Ведите дела вместе</div>
+      <div class="step-p">То, что вы успели добавить до связки, переезжает в общее. Дальше у каждого свой цвет: синий — ваше, коралловый — партнёра.</div>
+      <div class="pair" aria-hidden="true"><i></i><i></i></div>
+    </div>
+  </div>
+</section>
+
+<section class="block block-inside" id="razdely">
+  <div class="inside-head">
+    <h2>Что внутри</h2>
+    <div class="inside-sub">всё ниже — бесплатно и навсегда</div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="car-view" id="car">
+    <div class="car-stage" aria-hidden="true">
+<div class="car-item" data-k="tasks"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="display:flex;flex-direction:column;gap:12px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div>
+<div style="width:340px;height:716px;border-radius:46px;background:#000;padding:10px;box-sizing:border-box;"><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:11px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="font:700 30px/1 'Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Задачи</div><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:11px;background:#17191f;color:#f2f0ec;display:flex;align-items:center;justify-content:center;font:400 22px/1 system-ui">+</div><div style="height:34px;border-radius:11px;background:#17191f;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:700 13.5px/1 'Onest',system-ui;color:#f2f0ec">Мы</span><div style="display:flex"><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-6px"></div></div></div></div></div>
+<div style="display:flex;gap:7px;flex-wrap:wrap"><div style="border-radius:20px;padding:7px 13px;background:#f2f0ec;color:#0e0f13;font:700 12px/1 'Onest',system-ui">Все · 3</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest',system-ui">Мои · 2</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest',system-ui">Софьи · 1</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest',system-ui">Свободные · 1</div></div>
+<div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">В работе</div>
+<div style="background:#17191f;border-left:3px solid #38853E;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center"><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid #38853E;flex:none"></div><div style="flex:1"><div style="font:500 14.5px/1.25 'Onest',system-ui;color:#f2f0ec">Собрать документы на визу</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470">вдвоём · до 28 августа</div></div><div style="background:oklch(0.68 0.14 250);color:#0e0f13;border-radius:9px;padding:7px 11px;font:700 11.5px/1 'Onest',system-ui;flex:none">Выполнить</div></div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center;border-left:3px solid oklch(0.68 0.14 250)"><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid oklch(0.68 0.14 250);flex:none"></div><div style="flex:1"><div style="font:500 14.5px/1.25 'Onest',system-ui;color:#f2f0ec">Вынести мусор</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470;display:flex;align-items:center;gap:5px"><span style="font-family:'Material Symbols Rounded';font-size:14px;line-height:1;font-variation-settings:'FILL' 0,'wght' 400,'opsz' 20">repeat</span>ваша очередь · сегодня</div></div><div style="background:oklch(0.68 0.14 250);color:#0e0f13;border-radius:9px;padding:7px 11px;font:700 11.5px/1 'Onest',system-ui;flex:none">Выполнить</div></div>
+<div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Свободные</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center"><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid #3a3f4b;flex:none"></div><div style="flex:1"><div style="font:500 14.5px/1.25 'Onest',system-ui;color:#f2f0ec">Полить цветы</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470;display:flex;align-items:center;gap:5px"><span style="font-family:'Material Symbols Rounded';font-size:14px;line-height:1;font-variation-settings:'FILL' 0,'wght' 400,'opsz' 20">repeat</span>пн и чт · в понедельник</div></div><div style="background:oklch(0.68 0.14 250);color:#0e0f13;border-radius:9px;padding:7px 11px;font:700 11.5px/1 'Onest',system-ui;flex:none">Беру</div></div>
+</div>
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest',system-ui;color:#f2f0ec">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest',system-ui;color:#5f6470">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest',system-ui;color:#5f6470">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span><div style="font:500 9.5px/1 'Onest',system-ui;color:#5f6470">Планы</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">folder</span><div style="font:500 9.5px/1 'Onest',system-ui;color:#5f6470">Файлы</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div>
+</div></div></div>
+<div class="car-item" data-k="calendar"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column;position:relative">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:16px 18px 0;gap:12px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div><div style="font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Четверг, 8 октября</div><div style="margin-top:7px;font:700 27px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Октябрь</div></div>
+<div style="display:flex;align-items:center;gap:12px"><div style="display:flex;gap:14px;align-items:center"><span style="font:400 17px/1 system-ui;color:#5f6470">‹</span><span style="font:400 17px/1 system-ui;color:#8b8f9a">›</span></div><div style="display:flex"><div style="width:28px;height:28px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:28px;height:28px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-10px"></div></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px"><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">ПН</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">ВТ</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">СР</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">ЧТ</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">ПТ</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">СБ</div><div style="text-align:center;font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 0">ВС</div></div>
+
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;height:40px;padding-bottom:5px;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#33383f">28</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#33383f">29</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#33383f">30</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">1</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">2</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">3</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">4</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;height:40px;padding-bottom:5px;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">5</div><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px"><div style="font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6">6</div><div style="display:flex;gap:3px;align-items:center"><div style="width:5px;height:5px;border-radius:50%;background:#38853E"></div><div style="width:5px;height:5px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:5px;height:5px;border-radius:50%;background:oklch(0.68 0.14 25)"></div></div></div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">7</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:11px"><div style="width:26px;height:26px;border-radius:50%;background:#f2f0ec;display:flex;align-items:center;justify-content:center;font:700 14px/1 'IBM Plex Mono',monospace;color:#0e0f13">8</div><div style="width:5px;height:5px;border-radius:50%;background:#ddb049"></div></div>
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">9</div><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px"><div style="font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6">10</div><div style="width:5px;height:5px;border-radius:50%;background:#38853E"></div></div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">11</div>
+</div>
+<div style="position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;height:40px;padding-bottom:5px;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">12</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">13</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">14</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">15</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">16</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">17</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">18</div>
+<div style="position:absolute;left:6px;right:0;bottom:0;height:4px;border-radius:3px 0 0 3px;background:oklch(0.62 0.15 200)"></div>
+</div>
+<div style="position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;height:40px;padding-bottom:5px;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">19</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">20</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">21</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">22</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">23</div><div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:11px"><div style="font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6">24</div><div style="width:5px;height:5px;border-radius:50%;background:#ddb049"></div></div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">25</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:4px;background:oklch(0.62 0.15 200)"></div>
+</div>
+<div style="position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;height:40px;padding-bottom:5px;box-sizing:border-box">
+<div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">26</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">27</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">28</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">29</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">30</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#b6bbc6;border-radius:11px">31</div><div style="display:flex;align-items:center;justify-content:center;font:400 14px/1 'IBM Plex Mono',monospace;color:#33383f">1</div>
+<div style="position:absolute;left:0;width:calc(14.28% - 6px);bottom:0;height:4px;border-radius:0 3px 3px 0;background:oklch(0.62 0.15 200)"></div>
+</div>
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:2px"><span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Ближайшие</span><span style="font:600 13px/1 'Onest','Manrope',system-ui;color:oklch(0.68 0.14 250)">Добавить</span></div>
+
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<div style="width:46px;text-align:center;flex:none"><div style="font:700 15px/1 'IBM Plex Mono',monospace;color:#f2f0ec">8</div><div style="margin-top:3px;font:400 9.5px/1 'IBM Plex Mono',monospace;color:#5f6470">ОКТ</div></div>
+<div style="width:3px;height:30px;border-radius:2px;background:#ddb049;flex:none"></div>
+<div style="flex:1"><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">День рождения · Ирина</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">68 лет · мама Софьи</div></div>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<div style="width:46px;text-align:center;flex:none"><div style="font:700 15px/1 'IBM Plex Mono',monospace;color:#f2f0ec">10</div><div style="margin-top:3px;font:400 9.5px/1 'IBM Plex Mono',monospace;color:#5f6470">ОКТ</div></div>
+<div style="width:3px;height:30px;border-radius:2px;background:#38853E;flex:none"></div>
+<div style="flex:1"><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Ужин с Лёшей и Катей</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">19:30–21:00 · Софья</div></div>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<div style="width:46px;text-align:center;flex:none"><div style="font:700 13px/1 'IBM Plex Mono',monospace;color:#f2f0ec">12–26</div><div style="margin-top:3px;font:400 9.5px/1 'IBM Plex Mono',monospace;color:#5f6470">ОКТ</div></div>
+<div style="width:3px;height:30px;border-radius:2px;background:oklch(0.62 0.15 200);flex:none"></div>
+<div style="flex:1"><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Япония</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">из плана · поездка</div></div>
+<span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span>
+</div>
+</div>
+
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Планы</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">folder</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Файлы</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="wishes"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:13px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="font:700 30px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Хотелки</div><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:11px;background:#17191f;color:#f2f0ec;display:flex;align-items:center;justify-content:center;font:400 22px/1 system-ui">+</div><div style="height:34px;border-radius:11px;background:#17191f;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:700 13.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Мы</span><div style="display:flex"><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-6px"></div></div></div></div></div>
+
+<div style="display:flex;gap:8px"><div style="border-radius:20px;padding:8px 14px;background:oklch(0.68 0.14 25);color:#0e0f13;font:700 12.5px/1 'Onest','Manrope',system-ui">Софья · 9</div><div style="border-radius:20px;padding:8px 14px;background:#17191f;color:#8b8f9a;font:500 12.5px/1 'Onest','Manrope',system-ui">Дмитрий · 6</div><div style="border-radius:20px;padding:8px 14px;background:#17191f;color:#8b8f9a;font:500 12.5px/1 'Onest','Manrope',system-ui">Всё</div></div>
+<div style="background:#17191f;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center">
+<div style="width:62px;height:62px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px);display:flex;align-items:center;justify-content:center;font:400 8.5px/1.2 'IBM Plex Mono',monospace;color:#5f6470;text-align:center">фото<br>товара</div>
+<div style="flex:1"><div style="font:500 15.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Ваза Fern Studio</div><div style="margin-top:5px;font:700 14px/1 'IBM Plex Mono',monospace;color:#f2f0ec">7 400 ₽</div><div style="margin-top:8px;display:inline-block;border:1px solid #3a3f4b;color:#b6bbc6;border-radius:7px;padding:5px 9px;font:600 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.04em">ОЧЕНЬ ХОЧУ</div></div>
+</div>
+<div style="background:#17191f;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center">
+<div style="width:62px;height:62px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px);display:flex;align-items:center;justify-content:center;font:400 8.5px/1.2 'IBM Plex Mono',monospace;color:#5f6470;text-align:center">обложка</div>
+<div style="flex:1"><div style="font:500 15.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">«Дни в Бургундии»</div><div style="margin-top:5px;font:700 14px/1 'IBM Plex Mono',monospace;color:#f2f0ec">2 100 ₽</div></div>
+</div>
+<div style="background:#17191f;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center">
+<div style="width:62px;height:62px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px);display:flex;align-items:center;justify-content:center;font:400 8.5px/1.2 'IBM Plex Mono',monospace;color:#5f6470;text-align:center">курс</div>
+<div style="flex:1"><div style="font:500 15.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Керамика, суббота</div><div style="margin-top:5px;font:400 13px/1 'IBM Plex Mono',monospace;color:#5f6470">без цены</div></div>
+</div>
+<div style="background:#17191f;border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center;opacity:.55">
+<div style="width:62px;height:62px;border-radius:14px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec;text-decoration:line-through">Наушники</div><div style="margin-top:5px;font:400 13px/1 'IBM Plex Mono',monospace;color:#5f6470">исполнено в марте</div></div>
+</div>
+</div>
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Планы</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">folder</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Файлы</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="plans"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Планы</span><span style="font:400 17px/1 system-ui;color:#8b8f9a">···</span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:16px 20px 0;gap:13px">
+<div><div style="font:500 11px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Поездка</div><div style="margin-top:8px;font:700 27px/1.1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Япония, октябрь</div></div>
+<div style="background:#17191f;border-radius:20px;padding:18px">
+<div style="display:flex;justify-content:space-between;gap:10px">
+<div><div style="font:500 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.08em;text-transform:uppercase">План</div><div style="margin-top:8px;white-space:nowrap;font:500 17px/1 'IBM Plex Mono',monospace;color:#b6bbc6">5 000 €</div></div>
+<div><div style="font:500 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.08em;text-transform:uppercase">Потрачено</div><div style="margin-top:8px;white-space:nowrap;font:500 17px/1 'IBM Plex Mono',monospace;color:#b6bbc6">2 400 €</div></div>
+<div style="text-align:right"><div style="font:500 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.08em;text-transform:uppercase">Остаток</div><div style="margin-top:8px;white-space:nowrap;font:700 17px/1 'IBM Plex Mono',monospace;color:oklch(0.55 0.13 145)">2 600 €</div></div>
+</div>
+<div style="margin-top:16px;height:8px;border-radius:5px;background:#22262e;overflow:hidden"><div style="width:48%;height:100%;border-radius:5px;background:oklch(0.55 0.13 145)"></div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 11.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Траты · 4</span><span style="font:600 13px/1 'Onest','Manrope',system-ui;color:oklch(0.68 0.14 250)">Добавить</span></div>
+<div style="background:#17191f;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div style="display:flex;gap:11px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.68 0.14 250);flex:none"></div><div><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Билеты Москва — Токио</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470">2 августа</div></div></div>
+<span style="font:700 14.5px/1 'IBM Plex Mono',monospace;color:#f2f0ec;white-space:nowrap">1 480 €</span>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div style="display:flex;gap:11px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.68 0.14 25);flex:none"></div><div><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Отель Синдзюку, 6 ночей</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470">4 августа</div></div></div>
+<span style="font:700 14.5px/1 'IBM Plex Mono',monospace;color:#f2f0ec;white-space:nowrap">720 €</span>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div style="display:flex;gap:11px;align-items:center"><div style="width:8px;height:8px;border-radius:50%;background:oklch(0.68 0.14 25);flex:none"></div><div><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">JR Pass ×2</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470">5 августа</div></div></div>
+<span style="font:700 14.5px/1 'IBM Plex Mono',monospace;color:#f2f0ec;white-space:nowrap">200 €</span>
+</div>
+<div style="background:#131519;border:1px dashed #2b303a;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div style="display:flex;gap:11px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">cloud_off</span><div><div style="font:500 14.5px/1.2 'Onest','Manrope',system-ui;color:#b6bbc6">Страховка</div><div style="margin-top:5px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470">долетит при первой сети</div></div></div>
+<span style="font:700 14.5px/1 'IBM Plex Mono',monospace;color:#b6bbc6;white-space:nowrap">62 €</span>
+</div>
+</div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="lists"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Планы</span><span style="font:400 17px/1 system-ui;color:#8b8f9a">···</span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:14px 20px 0;gap:12px">
+<div><div style="font:700 26px/1.1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Куда сходить</div><div style="margin-top:8px;font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470">список на двоих · Москва, этой осенью</div></div>
+<div style="display:flex;align-items:center;gap:12px"><div style="flex:1;height:8px;border-radius:5px;background:#22262e;overflow:hidden"><div style="width:58%;height:100%;border-radius:5px;background:oklch(0.55 0.13 145)"></div></div><span style="font:700 13px/1 'IBM Plex Mono',monospace;color:#f2f0ec">7 из 12</span></div>
+<div style="display:flex;gap:8px"><div style="border-radius:20px;padding:8px 14px;background:#2b303a;color:#f2f0ec;font:700 12.5px/1 'Onest','Manrope',system-ui">Осталось · 5</div><div style="border-radius:20px;padding:8px 14px;background:#17191f;color:#8b8f9a;font:500 12.5px/1 'Onest','Manrope',system-ui">Сделано · 7</div><div style="border-radius:20px;padding:8px 14px;background:#17191f;color:#8b8f9a;font:500 12.5px/1 'Onest','Manrope',system-ui">Всё</div></div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#3a3f4b;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">radio_button_unchecked</span>
+<div style="flex:1;min-width:0"><div style="font:500 14.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Новый корпус ГЭС-2</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">добавил Дмитрий</div></div>
+<div style="flex:none;border-radius:8px;padding:5px 8px;background:rgba(60,150,180,.18);font:600 10.5px/1 'IBM Plex Mono',monospace;color:oklch(0.72 0.09 200)">12 СЕН</div></div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#3a3f4b;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">radio_button_unchecked</span>
+<div style="flex:1;min-width:0"><div style="font:500 14.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Ужин в Sartoria Lamberti</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">ссылка на бронь</div></div>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center">
+<span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#3a3f4b;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">radio_button_unchecked</span>
+<div style="flex:1;min-width:0"><div style="font:500 14.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Каток в Парке Горького</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">добавила Софья</div></div>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center;opacity:.55">
+<span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:oklch(0.55 0.13 145);font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">check_circle</span>
+<div style="flex:1;min-width:0"><div style="font:500 14.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec;text-decoration:line-through">Выставка Врубеля</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">Софья · 3 августа</div></div>
+</div>
+<div style="background:#17191f;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center;opacity:.55">
+<span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:oklch(0.55 0.13 145);font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">check_circle</span>
+<div style="flex:1;min-width:0"><div style="font:500 14.5px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec;text-decoration:line-through">Бар на Хохловке</div><div style="margin-top:5px;font:400 11px/1.35 'IBM Plex Mono',monospace;color:#5f6470">Дмитрий · 27 июля</div></div>
+</div>
+<div style="background:#17191f;border:1px dashed #2c323d;border-radius:16px;padding:13px 15px;display:flex;gap:12px;align-items:center"><span style="font:400 20px/1 system-ui;color:#5f6470">+</span><span style="font:400 14px/1 'Onest','Manrope',system-ui;color:#5f6470">Добавить пункт</span></div>
+<div style="padding:2px 2px 12px;font:400 11.5px/1.35 'IBM Plex Mono',monospace;color:#5f6470;text-wrap:pretty">Пункт с датой сам появляется в календаре, отметить галочкой может любой из двоих</div>
+</div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="notes"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:baseline;gap:9px"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Заметки</span><div style="font:700 28px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Рецепты</div></div><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:11px;background:#17191f;color:#f2f0ec;display:flex;align-items:center;justify-content:center;font:400 22px/1 system-ui">+</div><div style="width:34px;height:34px;border-radius:11px;background:#17191f;display:flex;align-items:center;justify-content:center"><span style="font-family:'Material Symbols Rounded';font-size:19px;line-height:1;display:block;color:#8b8f9a;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">search</span></div></div></div>
+<div style="display:flex;gap:7px;flex-wrap:wrap"><div style="border-radius:18px;padding:7px 12px;background:#2b303a;font:700 12.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Все · 4</div><div style="border-radius:18px;padding:7px 12px;background:#17191f;font:500 12.5px/1 'Onest','Manrope',system-ui;color:#8b8f9a">#ужин</div><div style="border-radius:18px;padding:7px 12px;background:#17191f;font:500 12.5px/1 'Onest','Manrope',system-ui;color:#8b8f9a">#купить</div><div style="border-radius:18px;padding:7px 12px;background:#17191f;font:500 12.5px/1 'Onest','Manrope',system-ui;color:#8b8f9a">#выпечка</div></div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:flex-start">
+<div style="flex:1;min-width:0"><div style="font:700 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Паста карбонара</div><div style="margin-top:6px;font:400 13px/1.4 'Onest','Manrope',system-ui;color:#8b8f9a;text-wrap:pretty">Без сливок. Гуанчале, пекорино, желтки — на две порции</div><div style="margin-top:9px;display:flex;align-items:center;gap:8px"><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">вчера, 21:14</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">·</span><div style="width:11px;height:11px;border-radius:50%;background:oklch(0.68 0.14 25)"></div><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">Софья</span></div></div>
+<div style="width:56px;height:56px;border-radius:12px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 8px,#1b1f26 8px 16px)"></div></div>
+
+<div style="background:#17191f;border-radius:18px;padding:15px 16px">
+<div style="font:700 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Шарлотка мамы Софьи</div><div style="margin-top:6px;font:400 13px/1.4 'Onest','Manrope',system-ui;color:#8b8f9a;text-wrap:pretty">Четыре яйца, стакан сахара, антоновка</div><div style="margin-top:9px;display:flex;align-items:center;gap:8px"><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">8 сентября</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">·</span><div style="width:11px;height:11px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">Дмитрий</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">· #выпечка</span></div></div>
+
+<div style="background:#17191f;border-radius:18px;padding:15px 16px">
+<div style="font:700 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Засолить огурцы</div><div style="margin-top:6px;font:400 13px/1.4 'Onest','Manrope',system-ui;color:#8b8f9a;text-wrap:pretty">Соседка с дачи продиктовала по телефону</div><div style="margin-top:9px;display:flex;align-items:center;gap:8px"><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">2 сентября</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">·</span><div style="width:11px;height:11px;border-radius:50%;background:oklch(0.68 0.14 25)"></div><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">Софья</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#5f6470">· #купить</span></div></div>
+
+</div>
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">list_alt</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Списки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">more_horiz</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Ещё</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="files"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="font:700 30px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Файлы</div><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:11px;background:#17191f;color:#f2f0ec;display:flex;align-items:center;justify-content:center;font:400 22px/1 system-ui">+</div><div style="height:34px;border-radius:11px;background:#17191f;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:700 13.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Мы</span><div style="display:flex"><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-6px"></div></div></div></div></div>
+<div style="background:#17191f;border-radius:12px;padding:11px 14px;font:400 14.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Поиск по названию и тегам</div>
+<div style="display:flex;gap:7px;flex-wrap:wrap"><div style="border-radius:20px;padding:7px 13px;background:#f2f0ec;color:#0e0f13;font:700 12px/1 'Onest','Manrope',system-ui">Все · 12</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest','Manrope',system-ui">Страховки</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest','Manrope',system-ui">Билеты</div><div style="border-radius:20px;padding:7px 13px;background:#17191f;color:#8b8f9a;font:500 12px/1 'Onest','Manrope',system-ui">Паспорта</div></div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:40px;height:50px;border-radius:7px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Полис ВЗР</div><div style="margin-top:6px;font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470">страховка · Софья · 1,2 МБ</div></div>
+</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:40px;height:50px;border-radius:7px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Билеты Стамбул</div><div style="margin-top:6px;font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470">билет · Дмитрий · PDF, 2,4 МБ</div></div>
+</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:40px;height:50px;border-radius:7px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Загранпаспорт · Софья</div><div style="margin-top:6px;font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470">паспорт · Софья · PDF, 3,1 МБ</div></div>
+</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:40px;height:50px;border-radius:7px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Договор аренды</div><div style="border:1px solid #3a3f4b;color:#8b8f9a;border-radius:6px;padding:4px 7px;font:600 10.5px/1 'IBM Plex Mono',monospace;white-space:nowrap">ЖДЁТ СЕТИ</div></div><div style="margin-top:6px;font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470">договор · Дмитрий · ждёт сети</div></div>
+</div>
+</div>
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Планы</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">folder</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Файлы</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="cards"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="font:700 30px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Карты</div><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:11px;background:#17191f;color:#f2f0ec;display:flex;align-items:center;justify-content:center;font:400 22px/1 system-ui">+</div><div style="height:34px;border-radius:11px;background:#17191f;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:700 13.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Мы</span><div style="display:flex"><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:16px;height:16px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-6px"></div></div></div></div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="border-radius:18px;padding:18px 18px 16px;background:oklch(0.55 0.13 145);display:flex;flex-direction:column;gap:22px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font:700 19px/1 'Onest','Manrope',system-ui;color:#0b1410">Пятёрочка</span><div style="width:20px;height:20px;border-radius:50%;background:oklch(0.68 0.14 250);border:2px solid oklch(0.55 0.13 145)"></div></div><div style="font:500 15px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(11,20,16,.75)">4600 5170</div></div>
+<div style="border-radius:18px;padding:18px 18px 16px;background:oklch(0.58 0.14 30);display:flex;flex-direction:column;gap:22px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font:700 19px/1 'Onest','Manrope',system-ui;color:#1a0d0a">Спортмастер</span><div style="width:20px;height:20px;border-radius:50%;background:oklch(0.68 0.14 25);border:2px solid oklch(0.58 0.14 30)"></div></div><div style="font:500 15px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(26,13,10,.75)">9982 4410</div></div>
+<div style="border-radius:18px;padding:18px 18px 16px;background:oklch(0.56 0.10 265);display:flex;flex-direction:column;gap:22px"><div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font:700 19px/1 'Onest','Manrope',system-ui;color:#0a0c18">Читай-город</span><div style="width:20px;height:20px;border-radius:50%;background:oklch(0.68 0.14 25);border:2px solid oklch(0.56 0.10 265)"></div></div><div style="font:500 15px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;color:rgba(10,12,24,.75)">3071 2288</div></div>
+<div style="border-radius:18px;padding:18px 18px 16px;background:#17191f;border:1px dashed #3a3f4b;display:flex;align-items:center;justify-content:center;gap:9px;min-height:74px"><span style="font:400 22px/1 system-ui;color:#5f6470">+</span><span style="font:500 14.5px/1 'Onest','Manrope',system-ui;color:#8b8f9a">Сканировать карту</span></div>
+</div>
+</div>
+<div style="flex:none;display:flex;padding:11px 8px 6px;border-top:1px solid #1c1f26"><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">checklist</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Задачи</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">calendar_month</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Календарь</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Хотелки</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">flag</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Планы</div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">folder</span><div style="font:500 9.5px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Файлы</div></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="capsules"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:center"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Мы</span><span style="font:600 15px/1 'Onest','Manrope',system-ui;color:oklch(0.68 0.14 250)">Написать</span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:12px">
+<div style="font:700 28px/1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Капсулы</div>
+<div style="background:oklch(0.68 0.14 25);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:34px;line-height:1;display:block;color:#1a0908;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">mail</span><div style="background:rgba(26,9,8,.85);color:oklch(0.68 0.14 25);border-radius:8px;padding:6px 10px;font:700 11px/1 'IBM Plex Mono',monospace">ВАМ</div></div>
+<div><div style="font:700 20px/1.25 'Onest','Manrope',system-ui,sans-serif;color:#1a0908">Тебя ждёт письмо<br>от Софьи</div><div style="margin-top:9px;font:400 13px/1.4 'IBM Plex Mono',monospace;color:rgba(26,9,8,.72)">откроется 14 февраля · через 186 дней</div></div>
+</div>
+<div style="background:#17191f;border-radius:20px;padding:18px;display:flex;gap:14px;align-items:center;position:relative;overflow:hidden">
+<div style="position:absolute;top:0;right:0;bottom:0;width:4px;background:oklch(0.68 0.14 250)"></div>
+<span style="font-family:'Material Symbols Rounded';font-size:26px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">lock_clock</span>
+<div style="flex:1"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Софье — на годовщину</div><div style="margin-top:6px;font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#5f6470">откроется 12 марта · ваше, можно править</div></div>
+</div>
+<div style="background:#17191f;border-radius:20px;padding:18px;display:flex;gap:14px;align-items:center;opacity:.65">
+<span style="font-family:'Material Symbols Rounded';font-size:26px;line-height:1;display:block;color:#5f6470;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">drafts</span>
+<div style="flex:1"><div style="font:500 15px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">«Первый год»</div><div style="margin-top:6px;font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:#5f6470">открыто 1 января · прочитано обоими</div></div>
+</div>
+<div style="margin-top:6px;background:#17191f;border:1px dashed #3a3f4b;border-radius:20px;padding:20px;display:flex;align-items:center;justify-content:center;gap:10px"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#8b8f9a;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">edit</span><span style="font:500 14.5px/1 'Onest','Manrope',system-ui;color:#8b8f9a">Написать капсулу</span></div>
+</div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="vote"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 0"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Мы</span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:13px">
+<div style="font:400 12px/1.35 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Давай выберем · от Софьи</div>
+<div style="font:700 28px/1.1 'Onest','Manrope',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.02em">Куда на выходные?</div>
+<div style="font:400 13px/1.45 'IBM Plex Mono',monospace;color:#8b8f9a;text-wrap:pretty">Выберите один. Ответы откроются, когда проголосуют оба.</div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+<div style="background:#17191f;border:2px solid oklch(0.68 0.14 250);border-radius:18px;padding:17px;display:flex;justify-content:space-between;align-items:center"><span style="font:500 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Суздаль, машиной</span><span style="font-family:'Material Symbols Rounded';font-size:24px;line-height:1;display:block;color:oklch(0.68 0.14 250);font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">check_circle</span></div>
+<div style="background:#17191f;border:1px solid #262a33;border-radius:18px;padding:17px;display:flex;justify-content:space-between;align-items:center"><span style="font:500 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Питер, поездом</span><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid #3a3f4b"></div></div>
+<div style="background:#17191f;border:1px solid #262a33;border-radius:18px;padding:17px;display:flex;justify-content:space-between;align-items:center"><span style="font:500 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Дома, никуда</span><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid #3a3f4b"></div></div>
+<div style="background:#17191f;border:1px solid #262a33;border-radius:18px;padding:17px;display:flex;justify-content:space-between;align-items:center"><span style="font:500 16px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Дача родителей</span><div style="width:22px;height:22px;border-radius:50%;border:1.8px solid #3a3f4b"></div></div>
+</div>
+<div style="flex:1"></div>
+<div style="background:#f2f0ec;color:#0e0f13;border-radius:15px;padding:17px;text-align:center;font:700 16px/1 'Onest','Manrope',system-ui,sans-serif;margin-bottom:14px">Отдать голос</div>
+</div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="radar"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 0"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a">‹ Мы</span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;padding:18px 20px 0;gap:12px">
+<div style="background:oklch(0.68 0.14 25);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:30px;line-height:1;display:block;color:#1a0908;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">cake</span><div style="background:rgba(26,9,8,.85);color:oklch(0.68 0.14 25);border-radius:8px;padding:6px 10px;font:700 11px/1 'IBM Plex Mono',monospace">ТОЛЬКО У ВАС</div></div>
+<div style="font:700 44px/1 'IBM Plex Mono',monospace;color:#1a0908">12</div>
+<div><div style="font:700 20px/1.2 'Onest','Manrope',system-ui,sans-serif;color:#1a0908">дней до дня рождения Софьи</div><div style="margin-top:7px;font:400 13px/1.3 'IBM Plex Mono',monospace;color:rgba(26,9,8,.72)">24 августа · в её списке три хотелки</div></div>
+</div>
+<div style="font:500 11.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase;margin-top:4px">Что она хочет</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:48px;height:48px;border-radius:12px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Ваза Fern Studio</div><div style="margin-top:5px;font:700 13px/1 'IBM Plex Mono',monospace;color:#8b8f9a">7 400 ₽</div></div>
+</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:48px;height:48px;border-radius:12px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">Курс керамики</div><div style="margin-top:5px;font:400 13px/1 'IBM Plex Mono',monospace;color:#5f6470">без цены</div></div>
+</div>
+<div style="background:#17191f;border-radius:18px;padding:15px 16px;display:flex;gap:13px;align-items:center">
+<div style="width:48px;height:48px;border-radius:12px;flex:none;background:repeating-linear-gradient(135deg,#22262e 0 6px,#1b1f26 6px 12px)"></div>
+<div style="flex:1"><div style="font:500 15px/1.2 'Onest','Manrope',system-ui;color:#f2f0ec">«Дни в Бургундии»</div><div style="margin-top:5px;font:700 13px/1 'IBM Plex Mono',monospace;color:#8b8f9a">2 100 ₽</div></div>
+</div>
+<div style="background:rgba(111,157,240,.1);border-radius:14px;padding:13px 15px;margin-bottom:14px;font:400 12px/1.45 'IBM Plex Mono',monospace;color:#b6bbc6;text-wrap:pretty">Радар виден только вам. У Софьи в свой срок — такой же про ваш день рождения.</div>
+</div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+<div class="car-item" data-k="chat"><div style="width:340px;height:716px;transform:scale(.82);transform-origin:top left"><div style="width:340px;height:716px;border-radius:46px;background:#000;position:relative;box-sizing:border-box;box-shadow:0 0 0 1px #55585f,0 0 0 2.5px #1b1c20,0 0 0 3.5px #3c3f46,0 30px 60px rgba(0,0,0,.55);padding:10px;flex:none"><div style="position:absolute;left:50%;top:21px;transform:translateX(-50%);width:98px;height:29px;border-radius:15px;background:#000;z-index:7"></div><div style="width:100%;height:100%;border-radius:37px;overflow:hidden;background:#0e0f13;display:flex;flex-direction:column">
+<div style="flex:none;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 2px 34px;height:20px;position:relative;z-index:6"><span style="font:600 14px/1 -apple-system,'SF Pro Text','Onest',system-ui,sans-serif;color:#f2f0ec;letter-spacing:-.01em">9:41</span><div style="display:flex;align-items:center;gap:5px"><div style="display:flex;align-items:flex-end;gap:1.5px;height:10px"><div style="width:3px;height:4px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:6px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:8px;border-radius:1px;background:#f2f0ec"></div><div style="width:3px;height:10px;border-radius:1px;background:#f2f0ec"></div></div><span style="font-family:'Material Symbols Rounded';font-size:15px;line-height:1;color:#f2f0ec;font-variation-settings:'FILL' 1,'wght' 600,'opsz' 20">wifi</span><div style="display:flex;align-items:center;gap:1px"><div style="width:22px;height:11px;border-radius:3.5px;border:1px solid rgba(242,240,236,.45);padding:1.5px;box-sizing:border-box"><div style="width:100%;height:100%;border-radius:1.5px;background:#f2f0ec"></div></div><div style="width:1.5px;height:4px;border-radius:0 1px 1px 0;background:rgba(242,240,236,.45)"></div></div></div></div>
+<div style="padding:14px 20px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1c1f26"><span style="font:500 15px/1 'Onest','Manrope',system-ui;color:#8b8f9a;width:60px">‹ Ещё</span><div style="display:flex;align-items:center;gap:8px"><div style="display:flex"><div style="width:18px;height:18px;border-radius:50%;background:oklch(0.68 0.14 250)"></div><div style="width:18px;height:18px;border-radius:50%;background:oklch(0.68 0.14 25);margin-left:-7px"></div></div><span style="font:700 17px/1 'Onest','Manrope',system-ui;color:#f2f0ec">Чат</span></div><span style="width:60px"></span></div>
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;padding:0 14px 8px">
+<div style="align-self:center;font:500 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase;padding:4px 0 6px">Вчера</div>
+<div style="align-self:flex-start;max-width:80%;background:#1c1f26;border-radius:18px 18px 18px 6px;padding:9px 13px;font:400 14.5px/1.4 'Onest','Manrope',system-ui;color:#f2f0ec;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px;row-gap:1px"><span style="text-wrap:pretty">Смотри, что нашла на выходные</span><span style="margin-left:auto;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b8f9a;padding-bottom:2px">19:12</span></div>
+<div style="align-self:flex-start;width:244px;background:#17191f;border:1px solid #2c3039;border-radius:18px;padding:11px 12px;display:flex;gap:11px;align-items:center;box-sizing:border-box"><div style="width:40px;height:40px;border-radius:12px;background:#22252d;display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#b6bbc6;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">redeem</span></div><div style="flex:1;min-width:0"><div style="font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Хотелка Софьи</div><div style="margin-top:5px;font:500 14px/1.25 'Onest','Manrope',system-ui;color:#f2f0ec">Кемпинг на Ладоге</div><div style="margin-top:6px;text-align:right;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b8f9a">19:12</div></div><span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;display:block;color:#3a4050;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">chevron_right</span></div>
+<div style="align-self:flex-end;max-width:80%;margin-top:6px;background:oklch(0.36 0.08 250);border-radius:18px 18px 6px 18px;padding:9px 13px;font:400 14.5px/1.4 'Onest','Manrope',system-ui;color:#f2f0ec;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px;row-gap:1px"><span style="text-wrap:pretty">Давай! Беру билеты на себя</span><span style="margin-left:auto;font:400 10px/1 'IBM Plex Mono',monospace;color:oklch(0.8 0.05 250);padding-bottom:2px">19:30</span></div>
+<div style="align-self:flex-end;width:244px;background:#17191f;border:1px solid #2c3039;border-radius:18px;padding:11px 12px;display:flex;gap:11px;align-items:center;box-sizing:border-box"><div style="width:40px;height:40px;border-radius:12px;background:#22252d;display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:oklch(0.55 0.13 145);font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">check_circle</span></div><div style="flex:1;min-width:0"><div style="font:500 10px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase">Задача · выполнена</div><div style="margin-top:5px;font:500 14px/1.25 'Onest','Manrope',system-ui;color:#8b8f9a;text-decoration:line-through">Билеты на электричку</div><div style="margin-top:6px;text-align:right;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b8f9a">19:31</div></div><span style="font-family:'Material Symbols Rounded';font-size:18px;line-height:1;display:block;color:#3a4050;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">chevron_right</span></div>
+<div style="align-self:center;font:500 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;letter-spacing:.1em;text-transform:uppercase;padding:10px 0 6px">Сегодня</div>
+<div style="align-self:flex-start;width:250px;background:#1c1f26;border-radius:18px 18px 18px 6px;padding:8px 13px 8px 8px;display:flex;align-items:center;gap:10px;box-sizing:border-box"><div style="width:34px;height:34px;border-radius:50%;background:oklch(0.68 0.14 25);display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#0e0f13;font-variation-settings:'FILL' 1,'wght' 300,'opsz' 24">play_arrow</span></div><div style="flex:1;display:flex;align-items:center;gap:2px;height:24px"><div style="width:2.5px;height:6px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:11px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:15px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:8px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:19px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:12px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:21px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:9px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:15px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:22px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:11px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:7px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:16px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:13px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:18px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:8px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:12px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:6px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:10px;border-radius:2px;background:#8b8f9a"></div><div style="width:2.5px;height:5px;border-radius:2px;background:#8b8f9a"></div></div><span style="font:500 11px/1 'IBM Plex Mono',monospace;color:#8b8f9a">0:24</span><span style="align-self:flex-end;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b8f9a;flex:none">10:02</span></div>
+<div style="align-self:flex-start;max-width:80%;background:#1c1f26;border-radius:18px 18px 18px 6px;padding:9px 13px;font:400 14.5px/1.4 'Onest','Manrope',system-ui;color:#f2f0ec;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px;row-gap:1px"><span style="text-wrap:pretty">Ты где? Электричка в 11:20</span><span style="margin-left:auto;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b8f9a;padding-bottom:2px">10:38</span></div>
+<div style="align-self:flex-end;max-width:80%;margin-top:6px;background:oklch(0.36 0.08 250);border-radius:18px 18px 6px 18px;padding:9px 13px;font:400 14.5px/1.4 'Onest','Manrope',system-ui;color:#f2f0ec;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:8px;row-gap:1px"><span style="text-wrap:pretty">Уже у вокзала</span><span style="margin-left:auto;font:400 10px/1 'IBM Plex Mono',monospace;color:oklch(0.8 0.05 250);padding-bottom:2px">10:41</span></div>
+<div style="align-self:flex-end;font:400 10.5px/1 'IBM Plex Mono',monospace;color:#5f6470;padding:2px 4px 0">прочитано</div>
+</div>
+<div style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px"><div style="width:38px;height:38px;border-radius:50%;background:#17191f;display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#8b8f9a;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">add</span></div><div style="flex:1;height:38px;border-radius:19px;background:#17191f;border:1px solid #22252d;display:flex;align-items:center;padding:0 15px;box-sizing:border-box;font:400 14.5px/1 'Onest','Manrope',system-ui;color:#5f6470">Сообщение</div><div style="width:38px;height:38px;border-radius:50%;background:#17191f;display:flex;align-items:center;justify-content:center;flex:none"><span style="font-family:'Material Symbols Rounded';font-size:22px;line-height:1;display:block;color:#8b8f9a;font-variation-settings:'FILL' 0,'wght' 300,'opsz' 24">mic</span></div></div>
+<div style="flex:none;width:130px;height:5px;border-radius:3px;background:rgba(242,240,236,.3);margin:0 auto 9px"></div>
+</div></div></div></div>
+    </div>
+    <div class="car-fade l"></div>
+    <div class="car-fade r"></div>
+    <button type="button" class="car-arrow l" id="car-prev" aria-label="Предыдущий раздел"><span class="icon">chevron_left</span></button>
+    <button type="button" class="car-arrow r" id="car-next" aria-label="Следующий раздел"><span class="icon">chevron_right</span></button>
+  </div>
+  <div class="car-cap" aria-live="polite">
+    <div class="car-num" id="car-num">01 / 12</div>
+    <div class="car-title" id="car-title">Задачи</div>
+    <div class="car-text" id="car-text">Общий список дел: взять себе или поставить партнёру.</div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot-req">
+    ИП Келлер Анна Владимировна<br>
+    ИНН 661404240879 · ОГРНИП 326965800259498<br>
+    Email: <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a><br>
+    *Instagram принадлежит Meta, признанной экстремистской и запрещённой в России
+  </div>
+  <div class="foot-links">
+    <a href="offer.html">Оферта</a>
+    <a href="privacy-ru.html">Политика обработки персональных данных</a>
+    <a href="consent-ru.html">Согласие на обработку персональных данных</a>
+    <a href="support.html">Поддержка</a>
+    <a class="foot-ig" href="https://www.instagram.com/k1rdm/" rel="me"><span>разработчик</span><b>@k1rdm*</b></a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+// Тексты и порядок — из макета. Без движения (настройка «уменьшить движение») лента стоит,
+// а карусель листается только руками.
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const BLUE = 'var(--accent)', CORAL = 'var(--brand)';
+
+// ── лента в герое ──
+const POOL = [
+  { mine: true,  icon: 'calendar_month', title: 'Ужин с Лёшей и Катей',      meta: 'суббота, 19:30',      section: 'календарь' },
+  { mine: false, icon: 'redeem',         title: 'Ваза Fern Studio',          meta: '7 400 ₽ · очень хочу', section: 'хотелки' },
+  { mine: true,  icon: 'checklist',      title: 'Поменять шины',             meta: 'свободная · без срока', section: 'задачи' },
+  { mine: false, icon: 'flag',           title: 'Казань, три дня',           meta: 'заложено 45 000 ₽',   section: 'планы' },
+  { mine: true,  icon: 'lock',           title: 'Полис ОСАГО',               meta: 'PDF · 2 страницы',    section: 'файлы' },
+  { mine: false, icon: 'mail',           title: 'На годовщину',              meta: 'откроется 12 марта',  section: 'капсулы' },
+  { mine: true,  icon: 'fact_check',     title: 'Что взять в поход',         meta: '4 из 11',             section: 'списки' },
+  { mine: false, icon: 'description',    title: 'Пароль от вайфая на даче',  meta: 'изменено сегодня',    section: 'заметки' }
+];
+const feed = document.getElementById('feed');
+const cards = POOL.map(c => {
+  const el = document.createElement('div');
+  const color = c.mine ? BLUE : CORAL;
+  el.className = 'feed-card';
+  el.innerHTML = `<div class="ic icon" style="color:${color}">${c.icon}</div>` +
+    `<div class="tx"><div class="tt">${c.title}</div><div class="mt">${c.meta}</div></div>` +
+    `<div class="sc"><i style="background:${color}"></i>${c.section}</div>`;
+  feed.appendChild(el);
+  return el;
+});
+let tick = 7;
+function placeFeed() {
+  const N = POOL.length, step = 78;
+  POOL.forEach((c, i) => {
+    const age = ((tick - i) % N + N) % N;
+    let o, tf;
+    if (age === N - 1) { o = 0; tf = `translate(${c.mine ? -140 : 140}px, -10px) scale(.94)`; }
+    else if (age >= 6) { o = 0; tf = `translate(0, ${age * step + 20}px) scale(.96)`; }
+    else { o = age === 5 ? .3 : age === 4 ? .65 : 1; tf = `translate(0, ${age * step}px)`; }
+    cards[i].style.opacity = o;
+    cards[i].style.transform = tf;
+  });
+}
+placeFeed();
+if (!still) setInterval(() => { tick++; placeFeed(); }, 2200);
+
+// На телефоне лента рисуется в ширину 480 и ужимается под экран, как в макете 1b.
+const feedBox = feed.parentElement;
+new ResizeObserver(() => {
+  const k = Math.min(1, feedBox.clientWidth / 480);
+  feed.style.transform = k < 1 ? `scale(${k})` : '';
+}).observe(feedBox);
+
+// ── разделы и карусель ──
+const META = [
+  { k: 'tasks',    icon: 'checklist',      title: 'Задачи',             text: 'Общий список дел: взять себе или поставить партнёру.' },
+  { k: 'calendar', icon: 'calendar_month', title: 'Календарь',          text: 'Общие события, поездки полосой, дни рождения считаются сами.' },
+  { k: 'wishes',   icon: 'redeem',         title: 'Хотелки',            text: 'Ссылка на товар — и партнёр знает, что подарить.' },
+  { k: 'plans',    icon: 'flag',           title: 'Планы',              text: 'Поездка, ремонт, свадьба: сколько заложили, потратили и осталось.' },
+  { k: 'lists',    icon: 'fact_check',     title: 'Списки',             text: 'Куда сходить, что посмотреть, что взять с собой.' },
+  { k: 'notes',    icon: 'description',    title: 'Заметки',            text: 'Общий блокнот: рецепты, пароль от вайфая, папки и поиск.' },
+  { k: 'files',    icon: 'lock',           title: 'Файлы под Face ID',  text: 'Паспорта, полисы и билеты — открываются только после проверки.' },
+  { k: 'cards',    icon: 'credit_card',    title: 'Карты лояльности',   text: 'Штрихкод во весь экран, на кассе не нужно искать.' },
+  { k: 'capsules', icon: 'mail',           title: 'Капсула времени',    text: 'Письмо, которое откроется в заданную дату.' },
+  { k: 'vote',     icon: 'how_to_vote',    title: 'Тайное голосование', text: 'Свой выбор скрыт, пока не проголосуют оба.' },
+  { k: 'radar',    icon: 'radar',          title: 'Подарочный радар',   text: 'Напомнит о дате и подскажет хотелку к ней.' },
+  { k: 'chat',     icon: 'chat',           title: 'Общий чат',          text: 'Текст, фото и файлы — рядом со всем остальным.' }
+];
+const N = META.length;
+const chipsBox = document.getElementById('chips');
+const chips = META.map((m, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'chip';
+  b.innerHTML = `<span class="icon">${m.icon}</span>${m.title}`;
+  b.onclick = () => pick(i);
+  chipsBox.appendChild(b);
+  return b;
+});
+const items = META.map((m, i) => {
+  const el = document.querySelector(`.car-item[data-k="${m.k}"]`);
+  el.onclick = () => pick(i);
+  return el;
+});
+let active = 0, lastPick = 0, hover = false;
+function placeCar() {
+  items.forEach((el, i) => {
+    const d = ((i - active + N + N / 2) % N) - N / 2, ad = Math.abs(d);
+    const x = ad > 2 ? Math.sign(d) * 900 : d * 300;
+    const s = ad === 0 ? 1 : ad === 1 ? .84 : .72;
+    el.style.transform = `translateX(${x}px) scale(${s})`;
+    el.style.opacity = ad === 0 ? 1 : ad === 1 ? .45 : ad === 2 ? .15 : 0;
+    el.style.zIndex = 10 - ad;
+  });
+  chips.forEach((b, i) => {
+    b.classList.toggle('on', i === active);
+    b.setAttribute('aria-pressed', i === active);
+  });
+  const m = META[active];
+  document.getElementById('car-num').textContent = String(active + 1).padStart(2, '0') + ' / ' + N;
+  document.getElementById('car-title').textContent = m.title;
+  document.getElementById('car-text').textContent = m.text;
+}
+function pick(i) {
+  active = (i + N) % N;
+  lastPick = Date.now();
+  placeCar();
+  // Выбранный чипс на телефоне может уехать за край ленты — подкручиваем её к нему.
+  if (chipsBox.scrollWidth > chipsBox.clientWidth) {
+    const b = chips[active];
+    chipsBox.scrollTo({ left: b.offsetLeft - (chipsBox.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' });
+  }
+}
+placeCar();
+document.getElementById('car-prev').onclick = () => pick(active - 1);
+document.getElementById('car-next').onclick = () => pick(active + 1);
+const car = document.getElementById('car');
+car.onmouseenter = () => { hover = true; };
+car.onmouseleave = () => { hover = false; };
+let x0 = null;
+car.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+car.addEventListener('touchend', e => {
+  if (x0 === null) return;
+  const dx = e.changedTouches[0].clientX - x0;
+  x0 = null;
+  if (Math.abs(dx) > 40) pick(active + (dx < 0 ? 1 : -1));
+});
+if (!still) setInterval(() => {
+  if (hover || Date.now() - lastPick < 8000) return;
+  active = (active + 1) % N;
+  placeCar();
+}, 4000);
+</script>
+
+</body>
+</html>
