@@ -154,6 +154,8 @@ a.btn:hover { color: var(--fg); }
 }
 .agree input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--accent); cursor: pointer; }
 .agree a { color: var(--fg); }
+/* Оговорка у самой кнопки, а не в абзаце сверху: абзац не дочитывают (#146). */
+.tip-warn { margin-top: 18px; font: 600 13px/1.5 var(--sans); color: var(--brand); text-wrap: pretty; }
 
 /* ── вопросы ───────────────────────────────────────────── */
 
@@ -345,12 +347,13 @@ a.btn:hover { color: var(--fg); }
 <section class="step" id="podderzhat">
   <h2>Поддержать</h2>
   <p>Если приложение оказалось полезным и хочется сказать спасибо деньгами — вот кнопка.
-    Это не покупка: премиум за донат не открывается, код привязки не нужен, и вернуть
-    его не получится. Просто поддержка, за неё спасибо.</p>
+    Код привязки не нужен, и вернуть донат не получится. Просто поддержка, за неё спасибо.</p>
 
+  <!-- Суммы не рядом с ценами пакетов и заранее не выбраны: 300 ₽ по умолчанию под
+       тарифом за 299 ₽ дважды приняли за покупку премиума (баг #146, 15.10 и 25.10). -->
   <div class="tips" id="tips">
     <button type="button" class="tip" data-tip="100" aria-pressed="false">100 ₽</button>
-    <button type="button" class="tip" data-tip="300" aria-pressed="true">300 ₽</button>
+    <button type="button" class="tip" data-tip="250" aria-pressed="false">250 ₽</button>
     <button type="button" class="tip" data-tip="500" aria-pressed="false">500 ₽</button>
     <input class="tip-own" id="tipOwn" inputmode="decimal" autocomplete="off"
            placeholder="своя сумма" aria-label="Своя сумма доната">
@@ -366,8 +369,10 @@ a.btn:hover { color: var(--fg); }
       обработки персональных данных</a></span>
   </label>
 
+  <div class="tip-warn">Это не покупка — премиум за донат не открывается</div>
+
   <div class="pay">
-    <button type="button" class="btn btn-primary" id="tipSbp" disabled>Поддержать на 300 ₽ через СБП</button>
+    <button type="button" class="btn btn-primary" id="tipSbp" disabled>Поддержать через СБП</button>
     <button type="button" class="btn btn-secondary" id="tipCard" disabled>Картой</button>
   </div>
 
