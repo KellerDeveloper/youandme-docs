@@ -8,6 +8,7 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pay.css">
 <script src="cookie.js" defer></script>
 <style>
 /* Стили только этой страницы. Палитра, шапка, подвал и типографика — в style.css */
@@ -38,94 +39,6 @@
 a.btn { display: inline-block; text-decoration: none; color: var(--fg); }
 a.btn:hover { color: var(--fg); }
 
-/* ── шаги ──────────────────────────────────────────────── */
-
-.step { padding: 40px 0; border-top: 1px solid var(--line-soft); }
-.step-no { font: 500 11.5px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
-.step h2 { margin: 14px 0 0; font: 700 26px/1.1 var(--sans); letter-spacing: -.02em; }
-.step > p { margin: 12px 0 0; font-size: 14px; color: var(--muted); max-width: 560px; text-wrap: pretty; }
-
-/* код привязки — шесть отдельных клеток, как в приложении */
-
-.code-box { margin-top: 22px; background: var(--card); border-radius: 20px; padding: 18px; max-width: 420px; }
-.cells { display: flex; gap: 9px; }
-.cells input {
-  flex: 1; width: 100%; min-width: 0; height: 46px;
-  border: 1px solid var(--line); border-radius: 12px;
-  background: var(--bg); color: var(--fg);
-  font: 600 22px/1 var(--mono); text-align: center; text-transform: uppercase;
-  padding: 0;
-}
-.cells input:focus { outline: none; border-color: var(--accent); border-width: 2px; }
-.code-hint { margin-top: 13px; font: 400 12px/1.5 var(--mono); color: var(--muted); text-wrap: pretty; }
-
-.code-status {
-  margin-top: 13px; padding: 11px 14px; border-radius: 12px; background: var(--bg);
-  display: none; gap: 10px; align-items: center;
-  font: 500 13px/1.3 var(--sans);
-}
-.code-status.shown { display: flex; }
-.code-status .icon { font-size: 18px; }
-.code-status.ok { color: var(--fg); }
-.code-status.ok .icon { color: var(--accent); font-variation-settings: 'FILL' 1, 'wght' 300, 'opsz' 24; }
-.code-status.warn { color: var(--mid); }
-.code-status.warn .icon { color: var(--dim); }
-.code-status small { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--muted); margin-top: 3px; }
-
-/* ── тарифы ────────────────────────────────────────────── */
-
-.plans { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: stretch; }
-
-.plan {
-  position: relative; text-align: left; cursor: pointer;
-  background: var(--card); border: 2px solid transparent; border-radius: 18px;
-  padding: 20px 18px; color: inherit; font: inherit;
-  display: flex; flex-direction: column; gap: 7px;
-}
-.plan:hover { border-color: var(--line); }
-.plan[aria-pressed="true"] { border-color: var(--accent); }
-.plan-term { font: 500 13.5px/1 var(--sans); color: var(--muted); }
-.plan-price { font: 700 30px/1 var(--sans); letter-spacing: -.02em; }
-.plan-meta { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.plan-per { font: 400 12px/1 var(--mono); color: var(--dim); }
-.plan-note { margin-top: auto; font: 400 12px/1.45 var(--mono); color: var(--muted); }
-
-/* годовой — единственный светлый, он же выбран по умолчанию */
-.plan.best { background: var(--fg); color: var(--on-light); }
-.plan.best .plan-term { color: rgba(6,14,30,.7); }
-.plan.best .plan-price { color: var(--on-light); font-size: 34px; }
-.plan.best .plan-per { color: rgba(6,14,30,.7); }
-.plan.best .plan-note { color: var(--on-light); font-weight: 600; }
-.plan.best:hover { border-color: var(--mid); }
-.plan.best[aria-pressed="true"] { border-color: var(--accent); }
-.plan-badge {
-  position: absolute; top: -10px; right: 14px;
-  padding: 5px 10px; border-radius: 7px;
-  background: var(--on-light); color: var(--fg);
-  font: 600 10.5px/1 var(--mono);
-}
-
-.pay { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-.btn {
-  font: 700 15px/1 var(--sans); border-radius: 14px; padding: 16px 30px;
-  border: 1px solid transparent; cursor: pointer;
-}
-.btn-primary { background: var(--fg); color: var(--on-light); }
-.btn-primary:hover { background: #fff; }
-.btn-secondary { background: transparent; color: var(--fg); border-color: var(--line); font-weight: 500; padding: 16px 26px; }
-.btn-secondary:hover { border-color: var(--mid); }
-.btn:disabled { opacity: .45; cursor: not-allowed; }
-
-.legal { margin-top: 16px; font: 400 12px/1.55 var(--mono); color: var(--dim); text-wrap: pretty; }
-.legal a { color: var(--mid); }
-
-.pay-error {
-  margin-top: 14px; display: none;
-  padding: 13px 15px; border-radius: 14px; background: rgba(111,157,240,.1);
-  font: 400 12px/1.5 var(--mono); color: var(--mid); text-wrap: pretty;
-}
-.pay-error.shown { display: block; }
-
 /* ── поддержать ────────────────────────────────────────── */
 
 /* Секция намеренно скромнее тарифов: донат — не сценарий страницы, а возможность для
@@ -137,34 +50,8 @@ a.btn:hover { color: var(--fg); }
 }
 .tip:hover { border-color: var(--line); }
 .tip[aria-pressed="true"] { border-color: var(--accent); }
-.tip-own {
-  width: 132px; background: var(--card); color: var(--fg); border: 1px solid transparent;
-  border-radius: 14px; padding: 13px 16px; font: 600 15px/1 var(--sans);
-}
-.tip-own::placeholder { color: var(--dim); font-weight: 400; }
-.tip-own:focus { outline: none; border-color: var(--accent); }
-/* Почта для чека: то же поле, что «своя сумма», шириной с блок кода. */
-.pay-email { display: block; width: 100%; max-width: 420px; margin-top: 22px; }
-/* Галочка согласия на ПДн — по инструкции юриста для РКН: по умолчанию снята, без неё
-   кнопки оплаты неактивны (agree() в скрипте). Ссылки — в новой вкладке, чтобы человек
-   прочитал документ и не потерял введённый код и почту. */
-.agree {
-  display: flex; gap: 12px; align-items: flex-start; max-width: 520px; margin-top: 18px;
-  font: 400 13px/1.5 var(--sans); color: var(--mid); text-wrap: pretty; cursor: pointer;
-}
-.agree input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--accent); cursor: pointer; }
-.agree a { color: var(--fg); }
 /* Оговорка у самой кнопки, а не в абзаце сверху: абзац не дочитывают (#146). */
 .tip-warn { margin-top: 18px; font: 600 13px/1.5 var(--sans); color: var(--brand); text-wrap: pretty; }
-
-/* ── вопросы ───────────────────────────────────────────── */
-
-.faq { padding: 40px 0; border-top: 1px solid var(--line-soft); }
-.faq h2 { margin: 0 0 22px; font: 700 26px/1.1 var(--sans); letter-spacing: -.02em; }
-.qa { padding: 18px 0; border-bottom: 1px solid var(--line-soft); }
-.qa:last-child { border-bottom: 0; }
-.qa h3 { margin: 0; font: 600 14.5px/1.3 var(--sans); }
-.qa p { margin: 9px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
 
 @media (max-width: 760px) {
   /* align-items здесь обязан остаться stretch: при flex-start колонка сжимается
@@ -172,22 +59,6 @@ a.btn:hover { color: var(--fg); }
      становится шире экрана. */
   .lead { display: block; padding: 12px 0 0; }
   .features { grid-template-columns: 1fr; padding: 22px 0 34px; }
-  /* На телефоне тариф — одна строка: срок и цена. Хвосты вроде «попробовать»
-     макет здесь не показывает, и в 414 px они всё равно не помещаются. */
-  .plans { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .plan {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas: "term price" "meta price";
-    align-items: center; gap: 4px 14px; padding: 15px 18px;
-  }
-  .plan-term { grid-area: term; }
-  .plan-price, .plan.best .plan-price { grid-area: price; font-size: 22px; }
-  .plan-meta { grid-area: meta; flex-direction: row; gap: 8px; min-width: 0; }
-  .plan-note { display: none; margin: 0; }
-  .plan.best .plan-note { display: block; }
-  .plan-badge { top: -8px; right: 12px; }
-  .pay .btn { flex: 1; padding: 16px 20px; text-align: center; }
   .stores .btn { flex: 1 1 auto; padding: 16px 20px; text-align: center; }
 }
 </style>
@@ -427,137 +298,8 @@ a.btn:hover { color: var(--fg); }
 
 </div>
 
+<script src="pay.js"></script>
 <script>
-// Адрес приёма оплаты. Четыре ветки — /check, /create, /donate, /webhook — живут по
-// этому адресу с разными путями. Пусто — оплата не подключена, и страница говорит об
-// этом честно, вместо того чтобы вести человека в никуда.
-// С 04.10.2026 оплату принимает наш сервер в Яндекс Облаке. Первое переключение
-// 19.09.2026 откатили в тот же час: коды привязки живых пар лежали только в Firestore,
-// и сайт отвечал «такого кода нет» всем подряд. Теперь сервер ищет код в обеих базах.
-// Адрес уведомлений ЮKassa (…/pay/webhook) меняется руками в её кабинете — вместе с этим.
-const PAY_ENDPOINT = "https://api.youandme-app.ru/pay";
-
-const cells = [...document.querySelectorAll("#cells input")];
-const statusBox = document.getElementById("codeStatus");
-const plansBox = document.getElementById("plans");
-const sbpBtn = document.getElementById("paySbp");
-const cardBtn = document.getElementById("payCard");
-const payError = document.getElementById("payError");
-
-let selected = plansBox.querySelector('[aria-pressed="true"]');
-
-const code = () => cells.map(c => c.value).join("");
-
-function status(kind, text, sub) {
-  statusBox.className = "code-status shown " + kind;
-  statusBox.querySelector(".icon").textContent = kind === "ok" ? "check_circle" : "info";
-  statusBox.querySelector(".code-status-text").innerHTML =
-    text + (sub ? '<small>' + sub + '</small>' : "");
-}
-
-// Ввод: одна клетка — один символ, автопереход вперёд и назад по Backspace.
-cells.forEach((cell, i) => {
-  cell.addEventListener("input", () => {
-    cell.value = cell.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    if (cell.value && i < cells.length - 1) cells[i + 1].focus();
-    if (code().length === 6) checkCode();
-    else statusBox.className = "code-status";
-  });
-  cell.addEventListener("keydown", e => {
-    if (e.key === "Backspace" && !cell.value && i > 0) cells[i - 1].focus();
-    if (e.key === "ArrowLeft" && i > 0) cells[i - 1].focus();
-    if (e.key === "ArrowRight" && i < cells.length - 1) cells[i + 1].focus();
-  });
-  // Вставка кода целиком раскладывается по клеткам, а не падает в одну.
-  cell.addEventListener("paste", e => {
-    e.preventDefault();
-    const text = (e.clipboardData.getData("text") || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    [...text].slice(0, cells.length - i).forEach((ch, k) => cells[i + k].value = ch);
-    cells[Math.min(i + text.length, cells.length - 1)].focus();
-    if (code().length === 6) checkCode();
-  });
-});
-
-async function checkCode() {
-  if (!PAY_ENDPOINT) {
-    status("warn", "Приём оплаты подключается",
-      "Код запомнится — вернитесь на страницу через пару дней.");
-    return;
-  }
-  status("warn", "Проверяем код…");
-  try {
-    const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(code()));
-    const data = await r.json();
-    if (data.ok) status("ok", data.names || "Пара найдена", "пара найдена");
-    else status("warn", "Такого кода нет", "Проверьте, что переписали его из приложения без ошибок.");
-  } catch {
-    status("warn", "Не получилось проверить код", "Проверьте связь и попробуйте ещё раз.");
-  }
-}
-
-// Выбор пакета: сумма едет в подпись главной кнопки.
-plansBox.addEventListener("click", e => {
-  const plan = e.target.closest(".plan");
-  if (!plan) return;
-  selected.setAttribute("aria-pressed", "false");
-  plan.setAttribute("aria-pressed", "true");
-  selected = plan;
-  sbpBtn.textContent = "Оплатить " + Number(plan.dataset.price).toLocaleString("ru-RU") + " ₽ через СБП";
-});
-
-// Почта для чека. По 54-ФЗ чек уходит покупателю, а ЮKassa сама её на своей форме
-// не спрашивает. Проверка грубая — точнее проверит ЮKassa.
-const payEmail = document.getElementById("payEmail");
-const emailOk = input => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
-
-// Галочка согласия: кнопки активны, только пока она стоит. Возвращает ту же сверку —
-// ею кнопки и включаются обратно после неудачной попытки оплаты.
-function agree(box, ...buttons) {
-  const sync = () => buttons.forEach(b => b.disabled = !box.checked);
-  box.addEventListener("change", sync);
-  sync();
-  return sync;
-}
-const payAgreed = agree(document.getElementById("payAgree"), sbpBtn, cardBtn);
-
-async function pay(method) {
-  payError.classList.remove("shown");
-  if (code().length !== 6) {
-    payError.textContent = "Сначала введите код привязки из приложения — иначе премиум некуда зачислить.";
-    payError.classList.add("shown");
-    cells[0].focus();
-    return;
-  }
-  if (!emailOk(payEmail)) {
-    payError.textContent = "Укажите почту — на неё придёт чек.";
-    payError.classList.add("shown");
-    payEmail.focus();
-    return;
-  }
-  if (!PAY_ENDPOINT) {
-    payError.textContent = "Приём оплаты ещё подключается. Загляните через пару дней — код привязки за это время не изменится.";
-    payError.classList.add("shown");
-    return;
-  }
-  sbpBtn.disabled = cardBtn.disabled = true;
-  try {
-    const r = await fetch(PAY_ENDPOINT + "/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: code(), plan: selected.dataset.plan, method, email: payEmail.value.trim() })
-    });
-    const data = await r.json();
-    if (data.confirmationUrl) location.href = data.confirmationUrl;
-    else throw new Error(data.error || "no url");
-  } catch {
-    payError.textContent = "Не получилось начать оплату. Попробуйте ещё раз, а если повторится — напишите на почту из подвала.";
-    payError.classList.add("shown");
-    payAgreed();
-  }
-}
-
-sbpBtn.addEventListener("click", () => pay("sbp"));
-cardBtn.addEventListener("click", () => pay("card"));
 
 // ── донат ────────────────────────────────────────────────────────────────────
 // Отдельная ручка и отдельные кнопки: у доната нет ни кода пары, ни пакета, и
