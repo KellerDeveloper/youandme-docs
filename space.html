@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You&amp;Me — место для альбома</title>
+<meta name="description" content="Пакеты места для общего альбома You&amp;Me: +10 или +50 ГБ на двоих, на 1, 3 или 12 месяцев, без автосписаний.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pay.css">
+<script src="cookie.js" defer></script>
+<style>
+/* Стили только этой страницы. Шаги, код, тарифы и оплата — в pay.css, как у премиума.
+   Макета страницы нет (решение владельца 28.10): собрана из блоков страницы премиума. */
+
+.space-head { padding: 44px 0 36px; }
+.space-head h1 { margin: 0; font: 800 34px/1.05 var(--sans); letter-spacing: -.03em; }
+.space-head p { margin: 14px 0 0; font-size: 15px; line-height: 1.55; color: var(--muted); max-width: 560px; text-wrap: pretty; }
+
+/* Шесть тарифов: два размера по три срока — строкой на размер. */
+.plans.space { grid-template-columns: repeat(3, 1fr); }
+.space-note { margin-top: 16px; font: 400 12px/1.5 var(--mono); color: var(--muted); max-width: 560px; text-wrap: pretty; }
+
+@media (max-width: 760px) {
+  .space-head { padding: 24px 0 28px; }
+  .space-head h1 { font-size: 28px; }
+  /* Тот же столбец, что у премиума (pay.css): `.plans.space` весомее `.plans` и без этой
+     строки оставлял три колонки — страница вылезала за экран. */
+  .plans.space { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="/home">
+    <svg width="46" height="46" viewBox="0 0 100 100" role="img" aria-label="You&amp;Me" font-family="Onest, Manrope, system-ui, sans-serif" font-weight="800" font-size="37" letter-spacing="-1.5" text-anchor="middle"><text x="50" y="45" fill="#4C9DEB">You</text><text x="50" y="81" fill="#E2726B">&amp;Me</text></svg>
+  </a>
+  <nav class="nav-top">
+    <a href="/#daet">Что даёт</a>
+    <a href="/#ceny">Цены</a>
+    <a href="/#voprosy">Вопросы</a>
+    <a href="/#kod" class="ghost">Оформить</a>
+  </nav>
+</header>
+
+<section class="space-head">
+  <h1>Место для альбома</h1>
+  <p>Пакет добавляет место в общем альбоме — сразу на двоих, сверх бесплатного гигабайта
+    или 5 ГБ премиума. Берётся вперёд и сам не продлевается.</p>
+</section>
+
+<section class="step" id="kod">
+  <div class="step-no">Шаг 1</div>
+  <h2>Код привязки</h2>
+  <p>Откройте приложение → «Альбом» → «Место» → «Пакеты места». Шесть символов там — это он.</p>
+
+  <div class="code-box">
+    <div class="cells" id="cells">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 1">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 2">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 3">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 4">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 5">
+      <input maxlength="1" inputmode="latin" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Символ кода 6">
+    </div>
+    <div class="code-hint">Код у пары один — тот же, что для премиума. Оформить пакет может любой из двоих.</div>
+    <div class="code-status" id="codeStatus" role="status" aria-live="polite">
+      <span class="icon"></span>
+      <span class="code-status-text"></span>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="ceny">
+  <div class="step-no">Шаг 2</div>
+  <h2>Сколько места</h2>
+  <p>Деньги вперёд, автопродления нет. Пакет закончится — ничего не спишется.</p>
+
+  <div class="plans space" id="plans" data-what="место">
+    <button type="button" class="plan" data-plan="space10_m1" data-price="79" aria-pressed="false">
+      <span class="plan-term">+10 ГБ · 1 месяц</span>
+      <span class="plan-price">79 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">79 ₽ в месяц</span>
+        <span class="plan-note">попробовать</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="space10_m3" data-price="199" aria-pressed="false">
+      <span class="plan-term">+10 ГБ · 3 месяца</span>
+      <span class="plan-price">199 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">66 ₽ в месяц</span>
+        <span class="plan-note">−16 %</span>
+      </span>
+    </button>
+    <button type="button" class="plan best" data-plan="space10_m12" data-price="690" aria-pressed="true">
+      <span class="plan-badge">Выгодный</span>
+      <span class="plan-term">+10 ГБ · 12 месяцев</span>
+      <span class="plan-price">690 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">58 ₽ в месяц</span>
+        <span class="plan-note">−27 % к месячному</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="space50_m1" data-price="299" aria-pressed="false">
+      <span class="plan-term">+50 ГБ · 1 месяц</span>
+      <span class="plan-price">299 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">299 ₽ в месяц</span>
+        <span class="plan-note">попробовать</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="space50_m3" data-price="799" aria-pressed="false">
+      <span class="plan-term">+50 ГБ · 3 месяца</span>
+      <span class="plan-price">799 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">266 ₽ в месяц</span>
+        <span class="plan-note">−11 %</span>
+      </span>
+    </button>
+    <button type="button" class="plan" data-plan="space50_m12" data-price="2690" aria-pressed="false">
+      <span class="plan-term">+50 ГБ · 12 месяцев</span>
+      <span class="plan-price">2 690 ₽</span>
+      <span class="plan-meta">
+        <span class="plan-per">224 ₽ в месяц</span>
+        <span class="plan-note">−25 % к месячному</span>
+      </span>
+    </button>
+  </div>
+
+  <div class="space-note">Тот же пакет ещё раз — продлится от конца текущего. Другой размер добавится сразу.</div>
+
+  <input class="tip-own pay-email" id="payEmail" type="email" inputmode="email" autocomplete="email"
+         spellcheck="false" placeholder="Почта для чека" aria-label="Почта для чека">
+
+  <label class="agree">
+    <input type="checkbox" id="payAgree">
+    <span>Нажимая кнопку, я даю своё <a href="consent-ru.html" target="_blank" rel="noopener">Согласие
+      на обработку персональных данных</a> и соглашаюсь с <a href="privacy-ru.html" target="_blank" rel="noopener">Политикой
+      обработки персональных данных</a></span>
+  </label>
+
+  <div class="pay">
+    <button type="button" class="btn btn-primary" id="paySbp" disabled>Оплатить 690 ₽ через СБП</button>
+    <button type="button" class="btn btn-secondary" id="payCard" disabled>Картой</button>
+  </div>
+
+  <div class="legal">
+    Нажимая «Оплатить», вы принимаете <a href="offer.html">оферту</a>. Чек придёт на почту.
+  </div>
+
+  <div class="pay-error" id="payError" role="status" aria-live="polite"></div>
+</section>
+
+<section class="faq" id="voprosy">
+  <h2>Вопросы, которые задают</h2>
+  <div class="qa">
+    <h3>Нужен ли премиум?</h3>
+    <p>Нет. Пакет добавляется к бесплатному гигабайту, а с премиумом — к пяти. Премиум и пакеты оплачиваются отдельно.</p>
+  </div>
+  <div class="qa">
+    <h3>Сколько это фото?</h3>
+    <p>Фото в альбоме ужимаются примерно до мегабайта: +10 ГБ — около 10 000 фото, +50 ГБ — около 50 000. Минута видео — около 40 МБ.</p>
+  </div>
+  <div class="qa">
+    <h3>Что будет, когда пакет закончится?</h3>
+    <p>Ничего не спишется. Если фото и видео занимают больше, чем осталось места, три месяца всё видно и скачивается, приложение заранее предупредит. Потом последние загрузки сверх лимита удалятся — успейте продлить пакет или скачать их.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot-req">
+    ИП Келлер Анна Владимировна<br>
+    ИНН 661404240879 · ОГРНИП 326965800259498<br>
+    Email: <a href="mailto:kellerdimka@gmail.com">kellerdimka@gmail.com</a><br>
+    *Instagram принадлежит Meta, признанной экстремистской и запрещённой в России
+  </div>
+  <div class="foot-links">
+    <a href="offer.html">Оферта</a>
+    <a href="privacy-ru.html">Политика обработки персональных данных</a>
+    <a href="consent-ru.html">Согласие на обработку персональных данных</a>
+    <a href="support.html">Поддержка</a>
+    <a class="foot-ig" href="https://www.instagram.com/k1rdm/" rel="me"><span>разработчик</span><b>@k1rdm*</b></a>
+  </div>
+</footer>
+
+</div>
+
+<script src="pay.js"></script>
+<script>
+// Возврат с формы оплаты: место прибавляет уведомление ЮKassa на сервер, обычно за секунды,
+// но обещать «уже готово» нельзя — говорим про минуту, статус настоящий в приложении.
+if (new URLSearchParams(location.search).get("paid")) {
+  status("ok", "Оплата принята",
+    "Место прибавится в приложении в течение минуты — перезапускать его не нужно.");
+  statusBox.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+</script>
+</body>
+</html>
