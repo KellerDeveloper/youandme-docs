@@ -23,6 +23,10 @@ const payError = document.getElementById("payError");
 let selected = plansBox.querySelector('[aria-pressed="true"]');
 
 const code = () => cells.map(c => c.value).join("");
+const CODE_FORMAT = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
+const CODE_CHAR = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]$/;
+let codeRejected = false;
+function invalidCode() { codeRejected = true; status("warn", "Проверьте код пары", "Нужны 6 букв или цифр из кода в приложении. Лишние символы не удаляются автоматически."); }
 
 function status(kind, text, sub) {
   statusBox.className = "code-status shown " + kind;
@@ -34,7 +38,9 @@ function status(kind, text, sub) {
 // Ввод: одна клетка — один символ, автопереход вперёд и назад по Backspace.
 cells.forEach((cell, i) => {
   cell.addEventListener("input", () => {
-    cell.value = cell.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+    cell.value = cell.value.replace(/\s/g, "").toUpperCase();
+    codeRejected = false;
+    if (cell.value && !CODE_CHAR.test(cell.value)) { invalidCode(); return; }
     if (cell.value && i < cells.length - 1) cells[i + 1].focus();
     if (code().length === 6) checkCode();
     else statusBox.className = "code-status";
@@ -47,14 +53,19 @@ cells.forEach((cell, i) => {
   // Вставка кода целиком раскладывается по клеткам, а не падает в одну.
   cell.addEventListener("paste", e => {
     e.preventDefault();
-    const text = (e.clipboardData.getData("text") || "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-    [...text].slice(0, cells.length - i).forEach((ch, k) => cells[i + k].value = ch);
-    cells[Math.min(i + text.length, cells.length - 1)].focus();
+    const text = (e.clipboardData.getData("text") || "").replace(/\s/g, "").toUpperCase();
+    const start = text.length === cells.length ? 0 : i;
+    if (!text || [...text].some(ch => !CODE_CHAR.test(ch)) || text.length > cells.length - start) { invalidCode(); return; }
+    codeRejected = false;
+    [...text].forEach((ch, k) => cells[start + k].value = ch);
+    cells[Math.min(start + text.length, cells.length - 1)].focus();
     if (code().length === 6) checkCode();
   });
 });
 
 async function checkCode() {
+  const checkingCode = code();
+  if (!CODE_FORMAT.test(checkingCode)) { invalidCode(); return; }
   if (!PAY_ENDPOINT) {
     status("warn", "Приём оплаты подключается",
       "Код запомнится — вернитесь на страницу через пару дней.");
@@ -62,11 +73,13 @@ async function checkCode() {
   }
   status("warn", "Проверяем код…");
   try {
-    const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(code()));
+    const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(checkingCode));
     const data = await r.json();
-    if (data.ok) status("ok", data.names || "Пара найдена", "пара найдена");
+    if (codeRejected || code() !== checkingCode) return;
+    if (data.ok) status("ok", "Код подходит для оплаты", "Проверка кода не даёт доступа к аккаунту.");
     else status("warn", "Такого кода нет", "Проверьте, что переписали его из приложения без ошибок.");
   } catch {
+    if (codeRejected || code() !== checkingCode) return;
     status("warn", "Не получилось проверить код", "Проверьте связь и попробуйте ещё раз.");
   }
 }
@@ -98,8 +111,8 @@ const payAgreed = agree(document.getElementById("payAgree"), sbpBtn, cardBtn);
 
 async function pay(method) {
   payError.classList.remove("shown");
-  if (code().length !== 6) {
-    payError.textContent = "Сначала введите код привязки из приложения — иначе " + (plansBox.dataset.what || "премиум") + " некуда зачислить.";
+  if (codeRejected || !CODE_FORMAT.test(code())) {
+    payError.textContent = "Сначала введите код пары из приложения — иначе " + (plansBox.dataset.what || "премиум") + " некуда зачислить.";
     payError.classList.add("shown");
     cells[0].focus();
     return;
@@ -111,7 +124,7 @@ async function pay(method) {
     return;
   }
   if (!PAY_ENDPOINT) {
-    payError.textContent = "Приём оплаты ещё подключается. Загляните через пару дней — код привязки за это время не изменится.";
+    payError.textContent = "Приём оплаты ещё подключается. Загляните через пару дней — постоянный код пары доступен в приложении.";
     payError.classList.add("shown");
     return;
   }
