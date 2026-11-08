@@ -31,8 +31,13 @@ function invalidCode() { codeRejected = true; status("warn", "Проверьте
 function status(kind, text, sub) {
   statusBox.className = "code-status shown " + kind;
   statusBox.querySelector(".icon").textContent = kind === "ok" ? "check_circle" : "info";
-  statusBox.querySelector(".code-status-text").innerHTML =
-    text + (sub ? '<small>' + sub + '</small>' : "");
+  const message = statusBox.querySelector(".code-status-text");
+  message.textContent = text;
+  if (sub) {
+    const detail = document.createElement("small");
+    detail.textContent = sub;
+    message.append(detail);
+  }
 }
 
 // Ввод: одна клетка — один символ, автопереход вперёд и назад по Backspace.
@@ -76,7 +81,8 @@ async function checkCode() {
     const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(checkingCode));
     const data = await r.json();
     if (codeRejected || code() !== checkingCode) return;
-    if (data.ok) status("ok", "Код подходит для оплаты", "Проверка кода не даёт доступа к аккаунту.");
+    if (data.ok && typeof data.names === "string" && data.names.trim()) status("ok", data.names, "пара найдена");
+    else if (data.ok) status("ok", "Код подходит для оплаты", "Проверка кода не даёт доступа к аккаунту.");
     else status("warn", "Такого кода нет", "Проверьте, что переписали его из приложения без ошибок.");
   } catch {
     if (codeRejected || code() !== checkingCode) return;
