@@ -35,6 +35,7 @@
 .code-status.warn .icon { color: var(--dim); }
 .code-status small { display: block; font: 400 11.5px/1.3 var(--mono); color: var(--muted); margin-top: 3px; }
 
+
 /* ── тарифы ────────────────────────────────────────────── */
 
 .plans { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: stretch; }
@@ -136,3 +137,26 @@
   .plan-badge { top: -8px; right: 12px; }
   .pay .btn { flex: 1; padding: 16px 20px; text-align: center; }
 }
+
+/* Промокод на странице премиума. */
+.promo-entry[hidden], .promo-box[hidden], .promo-message[hidden], .promo-controls [hidden],
+#promoTrial[hidden], #promoSuccess[hidden], #ceny[hidden] { display: none; }
+.promo-entry { margin-top: 20px; }
+.promo-toggle {
+  padding: 4px 0; border: 0; background: transparent; color: var(--accent);
+  font: 600 14px/1.5 var(--sans); cursor: pointer;
+}
+.promo-box { margin-top: 0; }
+.promo-box label { display: block; margin-bottom: 8px; font: 600 15px/1.4 var(--sans); }
+.promo-controls { display: flex; gap: 8px; }
+.promo-controls .tip-own { flex: 1; min-width: 0; background: var(--bg); border-color: var(--line); font-family: var(--mono); }
+.promo-controls .tip-own:focus { border-color: var(--accent); }
+.promo-controls .btn { flex: none; padding: 13px; font-size: 13px; }
+.promo-message { margin: 8px 0 0; font-size: 13px; color: #a6d8ac; }
+.promo-message[data-error="true"] { color: #ffae9d; }
+.plan-offer-price { grid-area: price; display: flex; flex-wrap: wrap; gap: 4px 7px; align-items: center; justify-content: start; }
+@media (max-width: 760px) { .plan-offer-price { justify-content: end; } }
+.plan-note[hidden] { display: none; }
+.plan-old-price { font: 400 12px/1.3 var(--sans); color: var(--muted); }
+.plan.best .plan-old-price { color: var(--on-light); opacity: .7; }
+.promo-return { text-decoration: none; }

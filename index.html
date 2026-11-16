@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="pay.css">
+<link rel="stylesheet" href="pay.css?v=promo1">
 <script src="cookie.js" defer></script>
 <style>
 /* Стили только этой страницы. Палитра, шапка, подвал и типографика — в style.css */
@@ -150,6 +150,34 @@ a.btn:hover { color: var(--fg); }
       <span class="code-status-text"></span>
     </div>
   </div>
+  <div class="promo-entry" id="promoEntry" hidden>
+    <button class="promo-toggle" id="promoToggle" type="button" aria-expanded="false" aria-controls="promoPanel">Ввести промокод</button>
+    <div class="code-box promo-box" id="promoPanel" hidden>
+      <label for="promoInput">Промокод</label>
+      <div class="promo-controls">
+        <input id="promoInput" class="tip-own" autocomplete="off" spellcheck="false" maxlength="24" placeholder="Например, SOFA20" autocapitalize="characters">
+        <button class="btn btn-secondary" id="promoApply" type="button">Применить</button>
+        <button class="btn btn-secondary" id="promoRemove" type="button" hidden>Убрать</button>
+      </div>
+      <p id="promoMessage" class="promo-message" role="status" aria-live="polite" hidden></p>
+    </div>
+  </div>
+</section>
+
+<section class="step" id="promoTrial" hidden>
+  <div class="step-no">Шаг 2</div>
+  <h2 id="promoTrialTitle"></h2>
+  <p id="promoTrialRules"></p>
+  <p id="promoTrialHint"></p>
+  <div class="pay">
+    <button type="button" class="btn btn-primary" id="promoRedeem" disabled></button>
+  </div>
+</section>
+
+<section class="step" id="promoSuccess" hidden>
+  <h2>Премиум активирован</h2>
+  <p id="promoSuccessUntil" role="status"></p>
+  <div class="pay"><a class="btn btn-primary promo-return" id="promoReturn" href="youandme://us">Вернуться в You&amp;Me</a></div>
 </section>
 
 <section class="step" id="ceny">
@@ -298,7 +326,8 @@ a.btn:hover { color: var(--fg); }
 
 </div>
 
-<script src="pay.js"></script>
+<script src="pay.js?v=promo1"></script>
+<script src="promo.js"></script>
 <script>
 
 // ── донат ────────────────────────────────────────────────────────────────────

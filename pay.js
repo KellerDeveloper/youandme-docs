@@ -26,6 +26,8 @@ const code = () => cells.map(c => c.value).join("");
 const CODE_FORMAT = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 const CODE_CHAR = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]$/;
 let codeRejected = false;
+let submitting = false;
+
 function invalidCode() { codeRejected = true; status("warn", "Проверьте код пары", "Нужны 6 букв или цифр из кода в приложении. Лишние символы не удаляются автоматически."); }
 
 function status(kind, text, sub) {
@@ -45,6 +47,7 @@ cells.forEach((cell, i) => {
   cell.addEventListener("input", () => {
     cell.value = cell.value.replace(/\s/g, "").toUpperCase();
     codeRejected = false;
+    window.checkoutPromo?.pairChanged();
     if (cell.value && !CODE_CHAR.test(cell.value)) { invalidCode(); return; }
     if (cell.value && i < cells.length - 1) cells[i + 1].focus();
     if (code().length === 6) checkCode();
@@ -63,6 +66,7 @@ cells.forEach((cell, i) => {
     if (!text || [...text].some(ch => !CODE_CHAR.test(ch)) || text.length > cells.length - start) { invalidCode(); return; }
     codeRejected = false;
     [...text].forEach((ch, k) => cells[start + k].value = ch);
+    window.checkoutPromo?.pairChanged();
     cells[Math.min(start + text.length, cells.length - 1)].focus();
     if (code().length === 6) checkCode();
   });
@@ -97,8 +101,17 @@ plansBox.addEventListener("click", e => {
   selected.setAttribute("aria-pressed", "false");
   plan.setAttribute("aria-pressed", "true");
   selected = plan;
-  sbpBtn.textContent = "Оплатить " + Number(plan.dataset.price).toLocaleString("ru-RU") + " ₽ через СБП";
+  updatePayLabel();
+  window.checkoutPromo?.planChanged();
 });
+
+function updatePayLabel() {
+  const kopecks = window.checkoutPromo?.price(selected.dataset.plan);
+  const amount = kopecks == null ? Number(selected.dataset.price) : kopecks / 100;
+  sbpBtn.textContent = "Оплатить " + amount.toLocaleString("ru-RU", {
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2
+  }) + " ₽ через СБП";
+}
 
 // Почта для чека. По 54-ФЗ чек уходит покупателю, а ЮKassa сама её на своей форме
 // не спрашивает. Проверка грубая — точнее проверит ЮKassa.
@@ -113,9 +126,16 @@ function agree(box, ...buttons) {
   sync();
   return sync;
 }
-const payAgreed = agree(document.getElementById("payAgree"), sbpBtn, cardBtn);
+const payConsent = document.getElementById("payAgree");
+const syncPayConsent = agree(payConsent, sbpBtn, cardBtn);
+function payAgreed() {
+  syncPayConsent();
+  if (submitting || window.checkoutPromo?.blocksPayment()) sbpBtn.disabled = cardBtn.disabled = true;
+}
+payConsent.addEventListener("change", payAgreed);
 
 async function pay(method) {
+  if (submitting || window.checkoutPromo?.blocksPayment()) return;
   payError.classList.remove("shown");
   if (codeRejected || !CODE_FORMAT.test(code())) {
     payError.textContent = "Сначала введите код пары из приложения — иначе " + (plansBox.dataset.what || "премиум") + " некуда зачислить.";
@@ -134,21 +154,40 @@ async function pay(method) {
     payError.classList.add("shown");
     return;
   }
+  submitting = true;
+  for (const input of cells) input.disabled = true;
+  for (const plan of plansBox.querySelectorAll("button")) plan.disabled = true;
   sbpBtn.disabled = cardBtn.disabled = true;
   try {
     const r = await fetch(PAY_ENDPOINT + "/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: code(), plan: selected.dataset.plan, method, email: payEmail.value.trim() })
+      body: JSON.stringify({
+        code: code(),
+        plan: selected.dataset.plan, method, email: payEmail.value.trim(),
+        ...window.checkoutPromo?.paymentFields(selected.dataset.plan, method, payEmail.value.trim())
+      })
     });
     const data = await r.json();
-    if (data.confirmationUrl) location.href = data.confirmationUrl;
-    else throw new Error(data.error || "no url");
+    if (r.ok && data.confirmationUrl) {
+      location.href = data.confirmationUrl;
+      return;
+    }
+    if (r.ok && data.paid) {
+      location.href = location.pathname + "?paid=1";
+      return;
+    }
+    if (!window.checkoutPromo?.showPaymentError(data.error)) {
+      throw new Error(data.error || "no url");
+    }
   } catch {
     payError.textContent = "Не получилось начать оплату. Попробуйте ещё раз, а если повторится — напишите на почту из подвала.";
     payError.classList.add("shown");
-    payAgreed();
   }
+  submitting = false;
+  for (const input of cells) input.disabled = false;
+  for (const plan of plansBox.querySelectorAll("button")) plan.disabled = false;
+  payAgreed();
 }
 
 sbpBtn.addEventListener("click", () => pay("sbp"));
