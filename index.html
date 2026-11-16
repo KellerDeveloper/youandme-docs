@@ -33,11 +33,10 @@
 
 /* ── скачать ───────────────────────────────────────────── */
 
-/* Ссылки на сторы — те же кнопки, что у оплаты, но это <a>: сбрасываем подчёркивание
-   и цвет ссылок из style.css. */
+/* Ссылки-кнопки используют цвета соответствующего варианта из pay.css. */
 .stores { margin-top: 22px; display: flex; gap: 12px; flex-wrap: wrap; }
-a.btn { display: inline-block; text-decoration: none; color: var(--fg); }
-a.btn:hover { color: var(--fg); }
+a.btn { display: inline-block; text-decoration: none; }
+a.btn-primary:hover { color: var(--on-light); }
 
 /* ── поддержать ────────────────────────────────────────── */
 
