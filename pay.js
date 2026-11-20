@@ -26,7 +26,86 @@ const code = () => cells.map(c => c.value).join("");
 const CODE_FORMAT = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/;
 const CODE_CHAR = /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]$/;
 let codeRejected = false;
+const linkBox = document.getElementById("linkCode");
+const linkStatus = document.getElementById("linkStatus");
+const manualButton = document.getElementById("manualCodeButton");
+let linkToken = null;
+let verifiedLink = false;
 let submitting = false;
+let targetRevision = 0;
+let paymentRequest = null;
+
+function resetPaymentTarget(nextToken) {
+  targetRevision += 1;
+  paymentRequest?.abort();
+  paymentRequest = null;
+  linkToken = nextToken;
+  verifiedLink = false;
+  codeRejected = false;
+  for (const cell of cells) cell.value = "";
+  statusBox.className = "code-status";
+  payError.classList.remove("shown");
+  window.checkoutPromo?.pairChanged();
+  setSubmitting(false);
+}
+
+function showManualCode(message = "") {
+  resetPaymentTarget(null);
+  history.replaceState(null, "", location.pathname + location.search + "#kod");
+  document.getElementById("manualCodeIntro").hidden = false;
+  document.getElementById("manualCode").hidden = false;
+  linkBox.hidden = !message;
+  linkStatus.textContent = message;
+  manualButton.hidden = true;
+}
+
+const invalidLinkMessage = "Ссылка больше не действует. Попросите новую ссылку или введите действующий код пары.";
+
+async function checkLink(token, revision) {
+  linkBox.hidden = false;
+  document.getElementById("manualCodeIntro").hidden = true;
+  document.getElementById("manualCode").hidden = true;
+  linkStatus.textContent = "Проверяем ссылку…";
+  manualButton.hidden = false;
+  document.getElementById("kod").scrollIntoView();
+  try {
+    const response = await fetch(PAY_ENDPOINT + "/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentLink: token })
+    });
+    if (!response.ok) throw new Error("check failed");
+    const data = await response.json();
+    if (targetRevision !== revision || linkToken !== token) return;
+    if (data.ok !== true) {
+      showManualCode(invalidLinkMessage);
+      return;
+    }
+    verifiedLink = true;
+    linkStatus.textContent = "✓ Код подставлен автоматически";
+    payAgreed();
+  } catch {
+    if (targetRevision === revision && linkToken === token) showManualCode("Не получилось проверить ссылку. Можно ввести код пары вручную.");
+  }
+}
+
+function syncPaymentTarget() {
+  const nextToken = new URLSearchParams(location.hash.slice(1)).get("pay");
+  if (nextToken === linkToken) return;
+  if (nextToken === null) {
+    showManualCode();
+    return;
+  }
+  resetPaymentTarget(nextToken);
+  void checkLink(nextToken, targetRevision);
+}
+
+manualButton?.addEventListener("click", () => {
+  if (submitting) return;
+  showManualCode();
+  payError.classList.remove("shown");
+  cells[0].focus();
+});
 
 function invalidCode() { codeRejected = true; status("warn", "Проверьте код пары", "Нужны 6 букв или цифр из кода в приложении. Лишние символы не удаляются автоматически."); }
 
@@ -74,6 +153,7 @@ cells.forEach((cell, i) => {
 
 async function checkCode() {
   const checkingCode = code();
+  const checkingRevision = targetRevision;
   if (!CODE_FORMAT.test(checkingCode)) { invalidCode(); return; }
   if (!PAY_ENDPOINT) {
     status("warn", "Приём оплаты подключается",
@@ -84,12 +164,12 @@ async function checkCode() {
   try {
     const r = await fetch(PAY_ENDPOINT + "/check?code=" + encodeURIComponent(checkingCode));
     const data = await r.json();
-    if (codeRejected || code() !== checkingCode) return;
+    if (targetRevision !== checkingRevision || codeRejected || code() !== checkingCode) return;
     if (data.ok && typeof data.names === "string" && data.names.trim()) status("ok", data.names, "пара найдена");
     else if (data.ok) status("ok", "Код подходит для оплаты", "Проверка кода не даёт доступа к аккаунту.");
     else status("warn", "Такого кода нет", "Проверьте, что переписали его из приложения без ошибок.");
   } catch {
-    if (codeRejected || code() !== checkingCode) return;
+    if (targetRevision !== checkingRevision || codeRejected || code() !== checkingCode) return;
     status("warn", "Не получилось проверить код", "Проверьте связь и попробуйте ещё раз.");
   }
 }
@@ -130,14 +210,27 @@ const payConsent = document.getElementById("payAgree");
 const syncPayConsent = agree(payConsent, sbpBtn, cardBtn);
 function payAgreed() {
   syncPayConsent();
-  if (submitting || window.checkoutPromo?.blocksPayment()) sbpBtn.disabled = cardBtn.disabled = true;
+  if (submitting || (linkToken !== null && !verifiedLink) || window.checkoutPromo?.blocksPayment()) sbpBtn.disabled = cardBtn.disabled = true;
 }
 payConsent.addEventListener("change", payAgreed);
+
+function setSubmitting(value) {
+  submitting = value;
+  for (const input of cells) input.disabled = value;
+  for (const plan of plansBox.querySelectorAll("button")) plan.disabled = value;
+  if (manualButton) manualButton.disabled = value;
+  payAgreed();
+}
 
 async function pay(method) {
   if (submitting || window.checkoutPromo?.blocksPayment()) return;
   payError.classList.remove("shown");
-  if (codeRejected || !CODE_FORMAT.test(code())) {
+  if (linkToken !== null && !verifiedLink) {
+    payError.textContent = "Дождитесь проверки ссылки или введите код пары вручную.";
+    payError.classList.add("shown");
+    return;
+  }
+  if (!verifiedLink && (codeRejected || !CODE_FORMAT.test(code()))) {
     payError.textContent = "Сначала введите код пары из приложения — иначе " + (plansBox.dataset.what || "премиум") + " некуда зачислить.";
     payError.classList.add("shown");
     cells[0].focus();
@@ -154,41 +247,77 @@ async function pay(method) {
     payError.classList.add("shown");
     return;
   }
-  submitting = true;
-  for (const input of cells) input.disabled = true;
-  for (const plan of plansBox.querySelectorAll("button")) plan.disabled = true;
-  sbpBtn.disabled = cardBtn.disabled = true;
+  const payingRevision = targetRevision;
+  const controller = new AbortController();
+  paymentRequest = controller;
+  setSubmitting(true);
+  let leavingForCheckout = false;
   try {
     const r = await fetch(PAY_ENDPOINT + "/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
-        code: code(),
+        ...(verifiedLink ? { paymentLink: linkToken } : { code: code() }),
         plan: selected.dataset.plan, method, email: payEmail.value.trim(),
         ...window.checkoutPromo?.paymentFields(selected.dataset.plan, method, payEmail.value.trim())
       })
     });
     const data = await r.json();
+    if (targetRevision !== payingRevision) return;
     if (r.ok && data.confirmationUrl) {
+      leavingForCheckout = true;
       location.href = data.confirmationUrl;
       return;
     }
     if (r.ok && data.paid) {
+      leavingForCheckout = true;
       location.href = location.pathname + "?paid=1";
       return;
     }
-    if (!window.checkoutPromo?.showPaymentError(data.error)) {
+    if (window.checkoutPromo?.showPaymentError(data.error)) {
+      // Цена не меняется в момент ошибки. Пользователь явно обновит промокод или уберёт его.
+    } else if (verifiedLink && data.error === "PAYMENT_LINK_INVALID") {
+      showManualCode(invalidLinkMessage);
+      cells[0].focus();
+    } else {
       throw new Error(data.error || "no url");
     }
   } catch {
+    if (targetRevision !== payingRevision) return;
     payError.textContent = "Не получилось начать оплату. Попробуйте ещё раз, а если повторится — напишите на почту из подвала.";
     payError.classList.add("shown");
+  } finally {
+    if (paymentRequest === controller && !leavingForCheckout) {
+      paymentRequest = null;
+      setSubmitting(false);
+    }
   }
-  submitting = false;
-  for (const input of cells) input.disabled = false;
-  for (const plan of plansBox.querySelectorAll("button")) plan.disabled = false;
-  payAgreed();
 }
 
 sbpBtn.addEventListener("click", () => pay("sbp"));
 cardBtn.addEventListener("click", () => pay("card"));
+
+if (linkBox) {
+  window.addEventListener("hashchange", syncPaymentTarget);
+  syncPaymentTarget();
+}
+
+window.addEventListener("pageshow", event => {
+  if (!event.persisted) return;
+  const token = linkBox ? new URLSearchParams(location.hash.slice(1)).get("pay") : null;
+  if (token !== null) {
+    resetPaymentTarget(token);
+    void checkLink(token, targetRevision);
+    return;
+  }
+  if (linkToken !== null) {
+    showManualCode();
+    return;
+  }
+  targetRevision += 1;
+  paymentRequest?.abort();
+  paymentRequest = null;
+  setSubmitting(false);
+  if (CODE_FORMAT.test(code())) void checkCode();
+});
